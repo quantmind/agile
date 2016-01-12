@@ -10,7 +10,7 @@ from pulsar.apps.http import HttpClient
 class Git:
 
     @classmethod
-    def create(cls, cfg):
+    def create(cls, cfg=None):
         auth = cls.auth()
         remote = yield from cls.execute('git', 'config', '--get',
                                         'remote.origin.url')
@@ -57,7 +57,7 @@ class Git:
         return data.decode('utf-8').strip()
 
     def __init__(self, cfg, auth, domain, path):
-        self.cfg = cfg
+        self.cfg = cfg if cfg is not None else {}
         self.auth = auth
         self.domain = domain
         self.repo_path = path
