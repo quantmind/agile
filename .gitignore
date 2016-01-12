@@ -1,0 +1,16 @@
+.DS_Store
+*.log
+
+#IDEs
+.idea
+
+#coverage
+.coveralls-repo-token
+.coverage
+htmlcov
+
+#python
+*.pyc
+__pycache__
+build
+dist
