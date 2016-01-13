@@ -2,7 +2,7 @@
 '''
 import os
 import json
-from asyncio import async
+import asyncio
 
 import pulsar
 from pulsar import ImproperlyConfigured, as_coroutine
@@ -46,7 +46,7 @@ class BeforeCommit(ReleaseSetting):
 
 class WriteNotes(ReleaseSetting):
     name = "write_notes"
-    validator = pulsar.validate_callable(4)
+    validator = pulsar.validate_callable(2)
     type = "callable"
     default = staticmethod(write_notes)
     desc = """\
@@ -94,7 +94,7 @@ class ReleaseManager(pulsar.Application):
 
     def worker_start(self, worker, exc=None):
         if not exc:
-            worker._loop.call_soon(async, self._start_release(worker))
+            worker._loop.call_soon(asyncio.async, self._start_release(worker))
 
     def _start_release(self, worker):
         exit_code = 1
@@ -112,7 +112,9 @@ class ReleaseManager(pulsar.Application):
         pulsar.arbiter().stop(exit_code=exit_code)
 
     def _release(self):
-        self.git = git = yield from Git.create(self.cfg)
+        self.git = git = yield from Git.create()
+        self.gitapi = gitapi = git.api()
+
         path = yield from git.toplevel()
         self.logger.info('Repository directory %s', path)
         # Read the release note file
@@ -137,7 +139,8 @@ class ReleaseManager(pulsar.Application):
 
         # Validate new tag and write the new version
         tag_name = release['tag_name']
-        version = yield from git.validate_tag(tag_name)
+        repo = gitapi.repo(git.repo_path)
+        version = yield from repo.validate_tag(tag_name)
         self.logger.info('Bump to version %s', version)
         self.cfg.change_version(self, tuple(version))
         #
@@ -154,6 +157,6 @@ class ReleaseManager(pulsar.Application):
                 self.logger.info(result)
 
                 self.logger.info('Creating a new tag %s' % tag_name)
-                tag = yield from git.create_tag(release)
+                tag = yield from repo.create_tag(release)
                 self.logger.info('Congratulation, the new release %s is out',
                                  tag)

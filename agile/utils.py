@@ -1,9 +1,50 @@
 import os
 from datetime import date
+import configparser
+
+from pulsar import ImproperlyConfigured
 
 
 def passthrough(manager, version):
     pass
+
+
+def semantic_version(tag):
+    '''Get a valid semantic version for tag
+    '''
+    try:
+        version = list(map(int, tag.split('.')))
+        assert len(version) == 3
+        return tuple(version)
+    except Exception:
+        raise ImproperlyConfigured('Could not parse tag, please use '
+                                   'MAJOR.MINOR.PATCH')
+
+
+def get_auth():
+    """Return a tuple for authenticating a user
+
+    If not successful raise ``ImproperlyConfigured``.
+    """
+    home = os.path.expanduser("~")
+    config = os.path.join(home, '.gitconfig')
+    if not os.path.isfile(config):
+        raise ImproperlyConfigured('.gitconfig file not available in %s'
+                                   % home)
+
+    parser = configparser.ConfigParser()
+    parser.read(config)
+    if 'user' in parser:
+        user = parser['user']
+        if 'username' not in user:
+            raise ImproperlyConfigured('Specify username in %s user '
+                                       'section' % config)
+        if 'token' not in user:
+            raise ImproperlyConfigured('Specify token in %s user section'
+                                       % config)
+        return (user['username'], user['token'])
+    else:
+        raise ImproperlyConfigured('No user section in %s' % config)
 
 
 def change_version(manager, version):
@@ -24,15 +65,16 @@ def change_version(manager, version):
 
 
 def write_notes(manager, release):
-    history = os.path.join(manager.release_path, 'history')
+    history = os.path.join(manager.releases_path, 'history')
     if not os.path.isdir(history):
         return False
     dt = date.today()
     dt = dt.strftime('%Y-%b-%d')
     vv = release['tag_name']
-    filename = os.path.join(history, '%s.md' % vv)
+    hist = '.'.join(vv.split('.')[:-1])
+    filename = os.path.join(history, '%s.md' % hist)
     body = ['# Ver. %s - %s' % (release['tag_name'], dt),
-            '\n',
+            '',
             release['body']]
 
     add_file = True
@@ -41,7 +83,7 @@ def write_notes(manager, release):
         # We need to add the file
         add_file = False
         with open(filename, 'r') as file:
-            body.append('\n')
+            body.append('')
             body.append(file.read())
 
     with open(filename, 'w') as file:

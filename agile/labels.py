@@ -1,7 +1,5 @@
 import json
 
-from .git import Github
-
 
 def labels(repos=None, labels=None):
     if not repos:
@@ -11,5 +9,3 @@ def labels(repos=None, labels=None):
     # loop through repos and get all labels
     for repo in repos:
         pass
-
-
