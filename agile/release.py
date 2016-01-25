@@ -86,7 +86,9 @@ exclude.difference_update(('config', 'loglevel', 'debug'))
 
 class ReleaseManager(pulsar.Application):
     name = 'release'
-    cfg = pulsar.Config(apps=['release'], exclude=exclude)
+    cfg = pulsar.Config(apps=['release'],
+                        log_level=['pulsar.error', 'info'],
+                        exclude=exclude)
 
     def monitor_start(self, monitor, exc=None):
         cfg = self.cfg
