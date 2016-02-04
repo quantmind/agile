@@ -34,7 +34,7 @@ parse_requirements(req_path)
 if __name__ == '__main__':
 
     setup(
-        name='agile',
+        name='git-agile',
         version=mod.__version__,
         packages=find_packages(exclude=['tests', 'tests.*']),
         url='https://github.com/quantmind/agile',

@@ -14,4 +14,4 @@ htmlcov
 __pycache__
 build
 dist
-agile.egg-info
+git_agile.egg-info
