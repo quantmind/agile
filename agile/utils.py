@@ -2,7 +2,59 @@ import os
 from datetime import date
 import configparser
 
-from pulsar import ImproperlyConfigured
+import pulsar
+from pulsar import ImproperlyConfigured, as_coroutine
+
+
+class AgileApps(list):
+
+    def __call__(self, manager):
+        for App in self:
+            app = App(manager)
+            result = yield from as_coroutine(app())
+            if result:
+                break
+
+
+agile_apps = AgileApps()
+
+
+class AgileMeta(type):
+    """A metaclass which collects all setting classes and put them
+    in the global ``KNOWN_SETTINGS`` list.
+    """
+
+    def __new__(cls, name, bases, attrs):
+        new_class = super().__new__(cls, name, bases, attrs)
+        agile_apps.append(new_class)
+        return new_class
+
+
+class AgileApp(metaclass=AgileMeta):
+
+    def __init__(self, app):
+        self.app = app
+
+    @property
+    def cfg(self):
+        return self.app.cfg
+
+    @property
+    def git(self):
+        return self.app.git
+
+    @property
+    def gitapi(self):
+        return self.app.gitapi
+
+    def __call__(self):
+        pass
+
+
+class AgileSetting(pulsar.Setting):
+    virtual = True
+    app = 'agile'
+    section = "Git Agile"
 
 
 def passthrough(manager, version):
