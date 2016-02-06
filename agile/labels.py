@@ -3,11 +3,10 @@ import json
 
 from pulsar import ImproperlyConfigured
 
-from .utils import (passthrough, change_version, write_notes,
-                    AgileSetting, AgileApp)
+from .utils import AgileSetting, AgileApp
 
 
-class Commit(AgileSetting):
+class LabelsSetting(AgileSetting):
     name = "labels"
     flags = ['--labels']
     action = "store_true"

@@ -11,7 +11,7 @@ from .utils import (passthrough, change_version, write_notes,
                     AgileSetting, AgileApp)
 
 
-class Release(AgileSetting):
+class ReleaseSetting(AgileSetting):
     name = "release"
     flags = ['--release']
     action = "store_true"
@@ -57,8 +57,7 @@ class Push(AgileSetting):
 
 class VersionFile(AgileSetting):
     name = "version_file"
-    flags = ["--version_file"]
-    default = "version.py"
+    default = ""
     desc = """\
         Python module containing the VERSION = ... line
         """
@@ -77,11 +76,7 @@ exclude = set(pulsar.Config().settings)
 exclude.difference_update(('config', 'loglevel', 'debug'))
 
 
-class ReleaseManager(AgileApp):
-    logger = logging.getLogger('agile.release')
-
-    def can_run(self):
-        return self.cfg.release
+class Release(AgileApp):
 
     def __call__(self):
         git = self.git

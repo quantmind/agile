@@ -13,5 +13,6 @@ htmlcov
 *.pyc
 __pycache__
 build
+_build
 dist
 git_agile.egg-info

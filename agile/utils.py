@@ -1,6 +1,9 @@
 import os
-from datetime import date
+import asyncio
+import logging
 import configparser
+from datetime import date
+from importlib import import_module
 
 import pulsar
 from pulsar import ImproperlyConfigured, as_coroutine
@@ -22,15 +25,16 @@ class AgileMeta(type):
     """A metaclass which collects all setting classes and put them
     in the global ``KNOWN_SETTINGS`` list.
     """
-
     def __new__(cls, name, bases, attrs):
         new_class = super().__new__(cls, name, bases, attrs)
+        new_class.logger = logging.getLogger('agile.%s' % name.lower())
         agile_apps.append(new_class)
         return new_class
 
 
 class AgileApp(metaclass=AgileMeta):
-
+    """Base class for agile applications
+    """
     def __init__(self, app):
         self.app = app
 
@@ -47,7 +51,7 @@ class AgileApp(metaclass=AgileMeta):
         return self.app.gitapi
 
     def can_run(self):
-        return False
+        return getattr(self.cfg, self.__class__.__name__.lower(), False)
 
     def __call__(self):
         pass
@@ -59,13 +63,32 @@ class AgileSetting(pulsar.Setting):
     section = "Git Agile"
 
 
+def execute(*args):
+    """Execute a shell command
+    :param args: a given number of command parameters
+    :return: the output text
+    """
+    proc = yield from asyncio.create_subprocess_exec(
+        *args, stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT)
+    yield from proc.wait()
+    data = yield from proc.stdout.read()
+    return data.decode('utf-8').strip()
+
+
 def passthrough(manager, version):
+    """A simple pass through function
+
+    :param manager: the release app
+    :param version: release version
+    :return: nothing
+    """
     pass
 
 
 def semantic_version(tag):
-    '''Get a valid semantic version for tag
-    '''
+    """Get a valid semantic version for tag
+    """
     try:
         version = list(map(int, tag.split('.')))
         assert len(version) == 3
@@ -96,15 +119,22 @@ def get_auth():
         if 'token' not in user:
             raise ImproperlyConfigured('Specify token in %s user section'
                                        % config)
-        return (user['username'], user['token'])
+        return user['username'], user['token']
     else:
         raise ImproperlyConfigured('No user section in %s' % config)
 
 
 def change_version(manager, version):
+    version_file = manager.cfg.version_file
+    if not version_file:
+        mod = import_module(manager.cfg.app_module)
+        version_file = mod.__file__
+        bits = version_file.split('.')
+        bits[-1] = 'py'
+        version_file = '.'.join(bits)
 
     def _generate():
-        with open(manager.cfg.version_file, 'r') as file:
+        with open(version_file, 'r') as file:
             text = file.read()
 
         for line in text.split('\n'):
@@ -114,7 +144,7 @@ def change_version(manager, version):
                 yield line
 
     text = '\n'.join(_generate())
-    with open(manager.cfg.version_file, 'w') as file:
+    with open(version_file, 'w') as file:
         file.write(text)
 
 

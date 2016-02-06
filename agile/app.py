@@ -1,15 +1,22 @@
 import os
+import json
+import logging
 
 import pulsar
-from pulsar import ensure_future, ImproperlyConfigured
+from pulsar import ensure_future, ImproperlyConfigured, as_coroutine
 
 from .git import Git
+from .utils import agile_apps, AgileSetting
 
 
 exclude = set(pulsar.Config().settings)
 exclude.difference_update(('config', 'loglevel', 'debug'))
 
-from .utils import agile_apps, AgileSetting
+
+class AppModule(AgileSetting):
+    name = "app_module"
+    default = ''
+    desc = """Application module (containing the __version__ attribute)"""
 
 
 class NoteFile(AgileSetting):
@@ -30,7 +37,12 @@ class AgileManager(pulsar.Application):
     git = None
     gitapi = None
     note_file = None
+    repo_path = None
+    """Path of repository
+    """
     releases_path = None
+    """Path to the location of release configuration files
+    """
 
     def monitor_start(self, monitor, exc=None):
         cfg = self.cfg
@@ -41,14 +53,17 @@ class AgileManager(pulsar.Application):
             worker._loop.call_soon(ensure_future, self._start_agile(worker))
 
     def _start_agile(self, worker):
+        self.logger = logging.getLogger('agile')
         exit_code = 1
+        if not self.cfg.app_module:
+            raise ImproperlyConfigured('app_module not specified')
         try:
             self.git = yield from Git.create()
             self.gitapi = self.git.api()
             # Read the release note file
-            path = yield from self.git.toplevel()
-            self.logger.info('Repository directory %s', path)
-            self.note_file = os.path.join(path, self.cfg.note_file)
+            self.repo_path = yield from self.git.toplevel()
+            self.logger.info('Repository directory %s', self.repo_path)
+            self.note_file = os.path.join(self.repo_path, self.cfg.note_file)
             if not os.path.isfile(self.note_file):
                 raise ImproperlyConfigured('%s file not available' %
                                            self.note_file)
@@ -61,7 +76,11 @@ class AgileManager(pulsar.Application):
             self.logger.exception(str(exc))
         else:
             exit_code = None
-        worker._loop.call_soon(self._exit, exit_code)
+
+        if self.gitapi:
+            self.gitapi.http.close()
+        self.logger.info("Exiting")
+        worker._loop.call_later(1, self._exit, exit_code)
 
     def _exit(self, exit_code):
         pulsar.arbiter().stop(exit_code=exit_code)
