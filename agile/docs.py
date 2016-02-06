@@ -76,8 +76,3 @@ class Docs(AgileApp):
         yield from s3.upload_folder(self.cfg.docs_bucket, path, url,
                                     skip=['environment.pickle', 'last_build'],
                                     content_types=content_types)
-
-
-
-
-

@@ -1,5 +1,3 @@
-import os
-
 from agile import AgileManager
 
 app_module = 'agile'

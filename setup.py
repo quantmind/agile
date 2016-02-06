@@ -14,6 +14,10 @@ install_requires = []
 dependency_links = []
 
 
+def read(fname):
+    return open(os.path.join(this_dir, fname)).read()
+
+
 def parse_requirements(path):
     with open(path, 'r', encoding='utf-8') as fp:
         for line in fp:
@@ -37,10 +41,12 @@ if __name__ == '__main__':
         name='git-agile',
         version=mod.__version__,
         packages=find_packages(exclude=['tests', 'tests.*']),
-        description="Tools for agile development on github",
+        description=mod.__doc__,
+        long_description=read('README.rst'),
         url='https://github.com/quantmind/agile',
         include_package_data=True,
         zip_safe=False,
         install_requires=install_requires,
-        dependency_links=dependency_links
+        dependency_links=dependency_links,
+        classifiers=mod.CLASSIFIERS
     )

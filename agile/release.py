@@ -2,7 +2,6 @@
 '''
 import os
 import json
-import logging
 
 import pulsar
 from pulsar import ImproperlyConfigured, as_coroutine

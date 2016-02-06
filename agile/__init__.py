@@ -5,6 +5,16 @@ import os
 VERSION = (0, 1, 0, 'final', 0)
 __author__ = 'Luca Sbardella'
 __contact__ = "luca@quantmind.com"
+CLASSIFIERS = ['Development Status :: 3 - Alpha',
+               'Intended Audience :: Developers',
+               'License :: OSI Approved :: BSD License',
+               'Operating System :: OS Independent',
+               'Programming Language :: Python',
+               'Programming Language :: Python :: 3',
+               'Programming Language :: Python :: 3.4',
+               'Programming Language :: Python :: 3.5',
+               'Topic :: Utilities',
+               'Topic :: Software Development :: Libraries :: Python Modules']
 
 
 if os.environ.get('agile_setup') != 'yes':
