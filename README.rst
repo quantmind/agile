@@ -1,21 +1,15 @@
 :Master CI: |master-build|_ |coverage-master|
-:Dev CI: |dev-build|_ |coverage-dev|
-:Documentation: http://pythonhosted.org/pulsar/
-:Downloads: http://pypi.python.org/pypi/pulsar
-:Source: https://github.com/quantmind/pulsar
+:Downloads: http://pypi.python.org/pypi/git-agile
+:Source: https://github.com/quantmind/git-agile
 :Mailing list: `google user group`_
 :Design by: `Quantmind`_ and `Luca Sbardella`_
 :Platforms: Linux, OSX, Windows. Python 3.4 and above
 :Keywords: git, github, python, aws, release, documentation
 
-.. |master-build| image:: https://travis-ci.org/quantmind/pulsar.svg?branch=master
-.. _master-build: http://travis-ci.org/quantmind/pulsar
-.. |dev-build| image:: https://travis-ci.org/quantmind/pulsar.svg?branch=dev
-.. _dev-build: http://travis-ci.org/quantmind/pulsar
-.. |coverage-master| image:: https://coveralls.io/repos/github/quantmind/pulsar/badge.svg?branch=master
-  :target: https://coveralls.io/github/quantmind/pulsar?branch=master
-.. |coverage-dev| image:: https://coveralls.io/repos/github/quantmind/pulsar/badge.svg?branch=dev
-  :target: https://coveralls.io/github/quantmind/pulsar?branch=dev
+.. |master-build| image:: https://travis-ci.org/quantmind/git-agile.svg?branch=master
+.. _master-build: http://travis-ci.org/quantmind/git-agile
+.. |coverage-master| image:: https://coveralls.io/repos/github/quantmind/git-agile/badge.svg?branch=master
+  :target: https://coveralls.io/github/quantmind/git-agile?branch=master
 
 ========
 Agile
