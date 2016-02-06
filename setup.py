@@ -37,6 +37,7 @@ if __name__ == '__main__':
         name='git-agile',
         version=mod.__version__,
         packages=find_packages(exclude=['tests', 'tests.*']),
+        description="Tools for agile development on github",
         url='https://github.com/quantmind/agile',
         include_package_data=True,
         zip_safe=False,
