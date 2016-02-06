@@ -17,10 +17,11 @@ class Commit(AgileSetting):
 
 class Labels(AgileApp):
 
+    def can_run(self):
+        return self.cfg.labels
+
     def __call__(self):
-        if not self.cfg.labels:
-            return
-        label_file = os.path.join(self.releases_path, 'labels.json')
+        label_file = os.path.join(self.app.releases_path, 'labels.json')
         if not label_file:
             raise ImproperlyConfigured('No label file %s' % label_file)
         repos = json.load(label_file)

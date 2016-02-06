@@ -25,6 +25,7 @@ class AgileManager(pulsar.Application):
     name = 'agile'
     cfg = pulsar.Config(apps=['agile'],
                         loglevel=['pulsar.error', 'info'],
+                        description='Agile release manager',
                         exclude=exclude)
     git = None
     gitapi = None

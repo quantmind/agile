@@ -11,9 +11,8 @@ class AgileApps(list):
     def __call__(self, manager):
         for App in self:
             app = App(manager)
-            result = yield from as_coroutine(app())
-            if result:
-                break
+            if app.can_run():
+                yield from as_coroutine(app())
 
 
 agile_apps = AgileApps()
@@ -46,6 +45,9 @@ class AgileApp(metaclass=AgileMeta):
     @property
     def gitapi(self):
         return self.app.gitapi
+
+    def can_run(self):
+        return False
 
     def __call__(self):
         pass

@@ -11,6 +11,14 @@ from .utils import (passthrough, change_version, write_notes,
                     AgileSetting, AgileApp)
 
 
+class Release(AgileSetting):
+    name = "release"
+    flags = ['--release']
+    action = "store_true"
+    default = False
+    desc = "Create a new release"
+
+
 class Commit(AgileSetting):
     name = "commit"
     flags = ['--commit']
@@ -72,9 +80,14 @@ exclude.difference_update(('config', 'loglevel', 'debug'))
 class ReleaseManager(AgileApp):
     logger = logging.getLogger('agile.release')
 
+    def can_run(self):
+        return self.cfg.release
+
     def __call__(self):
         git = self.git
-        release_json = os.path.join(self.releases_path, 'release.json')
+        gitapi = self.gitapi
+
+        release_json = os.path.join(self.app.releases_path, 'release.json')
 
         if not os.path.isfile(release_json):
             raise ImproperlyConfigured('%s file not available' % release_json)
@@ -83,7 +96,7 @@ class ReleaseManager(AgileApp):
         with open(release_json, 'r') as file:
             release = json.load(file)
 
-        with open(self.note_file, 'r') as file:
+        with open(self.app.note_file, 'r') as file:
             release['body'] = file.read().strip()
 
         yield from as_coroutine(self.cfg.before_commit(self, release))
@@ -111,3 +124,5 @@ class ReleaseManager(AgileApp):
                 tag = yield from repo.create_tag(release)
                 self.logger.info('Congratulation, the new release %s is out',
                                  tag)
+
+        return True
