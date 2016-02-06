@@ -15,7 +15,7 @@ CLASSIFIERS = ['Development Status :: 3 - Alpha',
                'Programming Language :: Python :: 3.5',
                'Topic :: Utilities',
                'Topic :: Software Development :: Libraries :: Python Modules']
-
+__version__ = '.'.join((str(v) for v in VERSION))
 
 if os.environ.get('agile_setup') != 'yes':
     from pulsar.utils.version import get_version
