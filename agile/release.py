@@ -2,31 +2,24 @@
 '''
 import os
 import json
-import asyncio
+import logging
 
 import pulsar
 from pulsar import ImproperlyConfigured, as_coroutine
 
-from .git import Git
-from .utils import passthrough, change_version, write_notes
+from .utils import (passthrough, change_version, write_notes,
+                    AgileSetting, AgileApp)
 
 
-class ReleaseSetting(pulsar.Setting):
-    virtual = True
-    app = 'release'
-    section = "Release Manager"
+class ReleaseSetting(AgileSetting):
+    name = "release"
+    flags = ['--release']
+    action = "store_true"
+    default = False
+    desc = "Create a new release"
 
 
-class NoteFile(ReleaseSetting):
-    name = "note_file"
-    flags = ["--note-file"]
-    default = 'releases/notes.md'
-    desc = """\
-        File with release notes
-        """
-
-
-class Commit(ReleaseSetting):
+class Commit(AgileSetting):
     name = "commit"
     flags = ['--commit']
     action = "store_true"
@@ -34,7 +27,7 @@ class Commit(ReleaseSetting):
     desc = "Commit changes"
 
 
-class BeforeCommit(ReleaseSetting):
+class BeforeCommit(AgileSetting):
     name = "before_commit"
     validator = pulsar.validate_callable(2)
     type = "callable"
@@ -44,7 +37,7 @@ class BeforeCommit(ReleaseSetting):
         """
 
 
-class WriteNotes(ReleaseSetting):
+class WriteNotes(AgileSetting):
     name = "write_notes"
     validator = pulsar.validate_callable(2)
     type = "callable"
@@ -54,7 +47,7 @@ class WriteNotes(ReleaseSetting):
         """
 
 
-class Push(ReleaseSetting):
+class Push(AgileSetting):
     name = "push"
     flags = ['--push']
     action = "store_true"
@@ -62,16 +55,15 @@ class Push(ReleaseSetting):
     desc = "Push changes to origin"
 
 
-class VersionFile(ReleaseSetting):
+class VersionFile(AgileSetting):
     name = "version_file"
-    flags = ["--version_file"]
-    default = "version.py"
+    default = ""
     desc = """\
         Python module containing the VERSION = ... line
         """
 
 
-class ChangeVersion(ReleaseSetting):
+class ChangeVersion(AgileSetting):
     name = "change_version"
     validator = pulsar.validate_callable(2)
     type = "callable"
@@ -84,48 +76,13 @@ exclude = set(pulsar.Config().settings)
 exclude.difference_update(('config', 'loglevel', 'debug'))
 
 
-class ReleaseManager(pulsar.Application):
-    name = 'release'
-    cfg = pulsar.Config(apps=['release'],
-                        loglevel=['pulsar.error', 'info'],
-                        exclude=exclude)
+class Release(AgileApp):
 
-    def monitor_start(self, monitor, exc=None):
-        cfg = self.cfg
-        cfg.set('workers', 0)
+    def __call__(self):
+        git = self.git
+        gitapi = self.gitapi
 
-    def worker_start(self, worker, exc=None):
-        if not exc:
-            worker._loop.call_soon(asyncio.async, self._start_release(worker))
-
-    def _start_release(self, worker):
-        exit_code = 1
-        try:
-            yield from self._release()
-        except ImproperlyConfigured as exc:
-            self.logger.error(str(exc))
-        except Exception as exc:
-            self.logger.exception(str(exc))
-        else:
-            exit_code = None
-        worker._loop.call_soon(self._exit, exit_code)
-
-    def _exit(self, exit_code):
-        pulsar.arbiter().stop(exit_code=exit_code)
-
-    def _release(self):
-        self.git = git = yield from Git.create()
-        self.gitapi = gitapi = git.api()
-
-        path = yield from git.toplevel()
-        self.logger.info('Repository directory %s', path)
-        # Read the release note file
-        note_file = os.path.join(path, self.cfg.note_file)
-        if not os.path.isfile(note_file):
-            raise ImproperlyConfigured('%s file not available' % note_file)
-
-        self.releases_path = os.path.dirname(note_file)
-        release_json = os.path.join(self.releases_path, 'release.json')
+        release_json = os.path.join(self.app.releases_path, 'release.json')
 
         if not os.path.isfile(release_json):
             raise ImproperlyConfigured('%s file not available' % release_json)
@@ -134,7 +91,7 @@ class ReleaseManager(pulsar.Application):
         with open(release_json, 'r') as file:
             release = json.load(file)
 
-        with open(note_file, 'r') as file:
+        with open(self.app.note_file, 'r') as file:
             release['body'] = file.read().strip()
 
         yield from as_coroutine(self.cfg.before_commit(self, release))
@@ -162,3 +119,5 @@ class ReleaseManager(pulsar.Application):
                 tag = yield from repo.create_tag(release)
                 self.logger.info('Congratulation, the new release %s is out',
                                  tag)
+
+        return True
