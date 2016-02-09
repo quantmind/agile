@@ -1,0 +1,27 @@
+---
+- name: ensure apt cache is up to date
+  when: not fast
+  apt: update_cache=yes
+
+- include: server.yml
+  when: postgresql_installdb
+
+- name: ensure psycopg2 is installed for python2
+  apt: name={{item}}
+  with_items:
+    - libpq-dev
+    - python-psycopg2
+
+- include: admin.yml
+  when: postgresql_installdb
+
+- name: Create/Drop databases
+  postgresql_db:
+      login_host={{ postgresql_host }}
+      port={{ postgresql_port }}
+      login_user={{ postgresql_user }}
+      login_password={{ postgresql_password }}
+      name={{ item }}
+      owner={{ postgresql_user }}
+      state={{ postgresql_state }}
+  with_items: postgresql_databases

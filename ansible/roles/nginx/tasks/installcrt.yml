@@ -1,0 +1,35 @@
+- name: strip ssl keys
+  command: >
+    openssl rsa
+    -in {{ server_crt_dir }}/{{ item.name }}/server.key.enc
+    -out {{ server_crt_dir }}/{{ item.name }}/server.key
+    -passin pass:{{ ssl_passphrase }}
+    creates={{ server_crt_dir }}/{{ item.name }}/server.key
+  with_items: "{{ nginx_domains }}"
+  when: item.certificate
+
+- name: remove secure certificate keys
+  file:
+    path="{{ server_crt_dir }}/{{ item.name }}/server.key.enc"
+    state=absent
+  with_items: "{{ nginx_domains }}"
+  when: item.certificate
+
+- name: Check certificate md5
+  shell:
+    openssl x509 -noout -modulus -in {{ server_crt_dir }}/{{ item.name }}/server.crt| openssl md5;
+  register: "md5_crt"
+  with_items: "{{ nginx_domains }}"
+  when: item.certificate
+
+- name: Check key md5
+  shell:
+    openssl rsa -noout -modulus -in {{ server_crt_dir }}/{{ item.name }}/server.key| openssl md5;
+  register: "md5_key"
+  with_items: "{{ nginx_domains }}"
+  when: item.certificate
+
+# - debug: msg="{{ item.0.stdout }} - {{ item.1.stdout }}"
+#   with_together:
+#     - "{{ md5_crt.results }}"
+#     - "{{ md5_key.results }}"

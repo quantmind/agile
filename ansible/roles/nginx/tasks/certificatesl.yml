@@ -1,0 +1,26 @@
+###
+#   Main installation script
+#
+#   Run only when a sys-admin execute the role with admin_user as git_user
+---
+- name: copy certificate to server
+  copy:
+    src={{item.certificate}}.crt
+    dest="{{ server_crt_dir }}/{{ item.name }}/server.crt"
+  with_items: "{{ nginx_domains }}"
+  when: item.certificate
+
+- name: copy certificate key to server
+  copy:
+    src={{item.certificate}}.key
+    dest="{{ server_crt_dir }}/{{ item.name }}/server.key.enc"
+  with_items: "{{ nginx_domains }}"
+  when: item.certificate
+
+- name: copy certificate dhe to server
+  copy:
+    src={{ item.certificate }}.dhparams
+    dest="{{ server_crt_dir }}/{{ item.name }}/server.dhparams"
+  with_items: "{{ nginx_domains }}"
+  when: item.certificate
+

@@ -1,0 +1,22 @@
+---
+ssl_passphrase: changeme
+
+nginx_conf_dir: /etc/nginx
+server_crt_dir: /etc/ssl
+
+nginx_default_index_html: |
+  <html>
+    <head>
+      <title>Your site</title>
+    </head>
+    <body>
+      <h1></h1>
+    </body>
+  </html>
+
+#
+# if specified, download certificates from this s3 bucket
+certificate_bucket: ""
+#
+# list of domain to configure
+nginx_domains: []

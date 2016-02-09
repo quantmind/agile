@@ -1,0 +1,9 @@
+---
+  - name: Install the redis-server package.
+    apt: name=redis-server update_cache=yes
+
+  - name: Configure redis
+    template: src=redis.conf.j2 dest=/etc/redis/redis.conf
+
+  - name: Enable and re-start the "redis-server" service.
+    service: name=redis-server enabled=yes state=restarted

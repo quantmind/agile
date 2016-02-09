@@ -1,1 +1,4 @@
 pulsar-cloud
+sphinx
+flake8
+coverage

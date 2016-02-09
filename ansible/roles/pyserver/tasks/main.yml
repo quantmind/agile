@@ -1,0 +1,10 @@
+# Debian/Ubuntu
+- include: debian.yml sudo=yes
+  become_user: root
+  when: ansible_os_family == "Debian"
+
+- include: ansible.yml
+
+- include: pyenv.yml
+
+- include: python.yml

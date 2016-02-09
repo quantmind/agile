@@ -1,0 +1,6 @@
+pip
+virtualenv
+cython
+tables
+psycopg2
+pandas

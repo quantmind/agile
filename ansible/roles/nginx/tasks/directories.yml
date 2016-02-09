@@ -1,0 +1,10 @@
+###
+#   Make sure directories are available
+#
+---
+- name: Make sure certificate directories are available
+  file:
+    path="{{ server_crt_dir }}/{{ item.name }}"
+    state=directory
+  with_items: "{{ nginx_domains }}"
+  when: item.certificate

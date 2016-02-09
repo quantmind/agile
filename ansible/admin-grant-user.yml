@@ -1,0 +1,32 @@
+###
+#   playbook for Admins
+#
+#   Grant a developer the admin rights on a machine
+#
+#
+#   It makes sure SSH keys for particular GitHub user are
+#   in the authorized_keys or not.
+#
+---
+- name: Grant user access to the inventory chosen
+
+  hosts: all
+
+  become: True
+
+  vars_prompt:
+    - name: git_user
+      prompt: "Enter Github Username"
+      private: false
+    - name: state
+      prompt: "absent/present"
+      private: false
+      default: "present"
+    - name: admin
+      prompt: "Admin user? yes/no"
+      private: false
+      default: "no"
+
+  roles:
+    - github
+    - {role: grantgithubuser, when: git_user != ""}

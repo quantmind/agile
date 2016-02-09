@@ -1,0 +1,16 @@
+
+- name: ensure the user main database is created
+  become_user: postgres
+  postgresql_db:
+      port={{ postgresql_port }}
+      name={{ postgresql_db }}
+
+- name: ensure the user (role) is available
+  become_user: postgres
+  postgresql_user:
+    port={{ postgresql_port }}
+    name={{ postgresql_user }}
+    password={{ postgresql_password }}
+    expires=infinity
+    db={{ postgresql_db }}
+    role_attr_flags={{ postgresql_role_flags }}

@@ -1,0 +1,7 @@
+{% if item.certificate | default(False) %}
+server {
+    listen 80;
+    server_name {{ item.name }};
+    return 301 https://{{ item.name }}$request_uri;
+}
+{% endif %}

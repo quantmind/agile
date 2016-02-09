@@ -1,0 +1,27 @@
+---
+- name: install numpy
+  pip:
+    state=present
+    name='numpy'
+    extra_args='-U'
+    executable='{{ pyenv_path }}/versions/{{ item }}/bin/pip'
+  with_items: pyenv_python_versions
+  when: numpy=='yes'
+
+- name: Copy {{ python_requirement_file }}
+  copy:
+    src: "{{ python_requirement_file }}"
+    dest: "{{ pyenv_path }}/requirements.txt"
+
+- name: install python packages in {{ pyenv_python_versions }}
+  pip:
+    state=present
+    requirements='{{ pyenv_path }}/requirements.txt'
+    extra_args='-U'
+    executable='{{ pyenv_path }}/versions/{{ item }}/bin/pip'
+  with_items: pyenv_python_versions
+
+- name: Remove {{ pyenv_path }}/requirements.txt
+  file:
+    path: "{{ pyenv_path }}/requirements.txt"
+    state: absent

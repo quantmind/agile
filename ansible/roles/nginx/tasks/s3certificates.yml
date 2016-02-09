@@ -1,0 +1,32 @@
+###
+#   Main installation script
+#
+#   Run only when a sys-admin execute the role with admin_user as git_user
+---
+- name: copy certificate to server from s3 bucket {{ certificate_bucket }}
+  s3:
+    bucket={{ certificate_bucket }}
+    object="{{ item.certificate }}.crt"
+    dest="{{ server_crt_dir }}/{{ item.name }}/server.crt"
+    mode=get
+  with_items: "{{ nginx_domains }}"
+  when: item.certificate
+
+- name: copy certificate key to server from s3 bucket {{ certificate_bucket }}
+  s3:
+    bucket={{ certificate_bucket }}
+    object="{{ item.certificate }}.key"
+    dest="{{ server_crt_dir }}/{{ item.name }}/server.key.enc"
+    mode=get
+  with_items: "{{ nginx_domains }}"
+  when: item.certificate
+
+# Diffie-Hellman parameter for DHE ciphersuites, recommended 2048 bits
+- name: copy certificate dh params to server from s3 bucket {{ certificate_bucket }}
+  s3:
+    bucket={{ certificate_bucket }}
+    object="{{ item.certificate }}.dhparams"
+    dest="{{ server_crt_dir }}/{{ item.name }}/server.dhparams"
+    mode=get
+  with_items: "{{ nginx_domains }}"
+  when: item.certificate

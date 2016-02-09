@@ -1,0 +1,17 @@
+---
+- name: Copy {{ ansible_requirement_file }}
+  copy:
+    src: "{{ ansible_requirement_file }}"
+    dest: "{{ pyenv_path }}/requirements-ansible.txt"
+
+- name: install python 2 ansible dependencies
+  pip:
+    state=present
+    requirements='{{ pyenv_path }}/requirements-ansible.txt'
+    executable="{{ ansible_pip }}"
+    extra_args='-U'
+
+- name: Remove {{ pyenv_path }}/requirements-ansible.txt
+  file:
+    path: "{{ pyenv_path }}/requirements-ansible.txt"
+    state: absent

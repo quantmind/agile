@@ -1,0 +1,23 @@
+---
+#
+# defaults file for pyenv
+pyenv_owner: "{{ ansible_env.USER }}"
+pyenv_owner_home: "{{ ansible_env.HOME }}"
+#
+# Make sure pyenv is up-to-date
+pyenv_update_git_install: yes
+#
+# Make sure these versions are installed
+pyenv_python_versions:
+  - 3.4.3
+  - 3.5.1
+#
+# File containing python requirements to install at global level
+python_requirement_file: "requirements.txt"
+#
+# File containing python 2 requirements for ansible
+ansible_pip: "pip2"
+ansible_requirement_file: "requirements-ansible.txt"
+#
+# Do we need numpy installed?
+numpy: "yes"

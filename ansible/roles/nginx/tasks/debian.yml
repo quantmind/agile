@@ -1,0 +1,13 @@
+- name: ensure aptitude is installed
+  apt: pkg=aptitude state=present
+
+- name: update apt
+  apt: update_cache=yes upgrade=full cache_valid_time=86400 force=yes
+
+- name: install nginx dependency packages
+  apt: pkg={{item}} state=present force=yes
+  with_items:
+    - libssl-dev
+    - libpcre3
+    - libpcre3-dev
+    - nginx

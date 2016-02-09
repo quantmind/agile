@@ -1,0 +1,11 @@
+###
+#   Example playbook on how to run pyserver role
+---
+- name: Install pyserver on all machines
+
+  hosts: all
+
+  become: True
+
+  roles:
+    - pyserver

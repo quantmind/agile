@@ -1,0 +1,15 @@
+---
+#
+# Install PostgreSql database?
+postgresql_installdb: false
+postgresql_state: present
+#
+# Superuser for service
+#
+# DB user setup
+postgresql_host: localhost
+postgresql_port: 5432
+postgresql_user: changeme
+postgresql_db: changeme
+postgresql_password: changeme
+postgresql_role_flags: "CREATEDB,CREATEROLE,LOGIN"

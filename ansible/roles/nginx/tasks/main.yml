@@ -1,0 +1,20 @@
+---
+# Debian/Ubuntu
+- include: debian.yml sudo=yes
+  become_user: root
+  when: ansible_os_family == "Debian"
+
+- include: directories.yml
+
+- include: certificates.yml
+  when: certificate_bucket == ""
+
+- include: s3certificates.yml
+  when: certificate_bucket != ""
+
+- include: installcrt.yml
+
+- include: conf.yml
+
+- name: Reload nginx service
+  service: name=nginx state=reloaded

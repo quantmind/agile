@@ -1,0 +1,4 @@
+---
+- include: pq.yml
+  become_user: root
+  when: postgresql_installdb == true

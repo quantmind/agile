@@ -1,0 +1,17 @@
+###
+#   Install nginx configuration files
+#
+---
+- name: copy server conf files to {{ nginx_conf_dir }}/sites-available
+  template:
+    src="nginx.conf.j2"
+    dest="{{ nginx_conf_dir }}/sites-available/{{ item.name }}.conf"
+  with_items: "{{ nginx_domains }}"
+
+- name: create symlinks in {{ nginx_conf_dir }}/sites-enabled
+  file:
+    src="{{ nginx_conf_dir }}/sites-available/{{ item.name }}.conf"
+    path="{{ nginx_conf_dir }}/sites-enabled/{{ item.name }}.conf"
+    state=link
+  with_items: "{{ nginx_domains }}"
+

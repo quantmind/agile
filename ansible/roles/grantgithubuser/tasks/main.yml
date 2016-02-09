@@ -1,0 +1,8 @@
+---
+- name: Install the SSH key from GitHub for ubuntu user
+  when: admin == 'yes'
+  authorized_key: user=ubuntu key=https://github.com/{{ git_user }}.keys state={{ state }}
+
+- name: Install the SSH key from GitHub for <services_user>
+  when: services_user != ''
+  authorized_key: user={{ services_user }} key=https://github.com/{{ git_user }}.keys state={{ state }}
