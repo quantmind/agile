@@ -100,12 +100,12 @@ class Release(AgileApp):
         repo = gitapi.repo(git.repo_path)
         version = yield from repo.validate_tag(tag_name)
         self.logger.info('Bump to version %s', version)
-        self.cfg.change_version(self, tuple(version))
+        self.cfg.change_version(self.app, tuple(version))
         #
         if self.cfg.commit or self.cfg.push:
             #
             # Add release note to the changelog
-            yield from as_coroutine(self.cfg.write_notes(self, release))
+            yield from as_coroutine(self.cfg.write_notes(self.app, release))
             self.logger.info('Commit changes')
             result = yield from git.commit(msg='Release %s' % tag_name)
             self.logger.info(result)
