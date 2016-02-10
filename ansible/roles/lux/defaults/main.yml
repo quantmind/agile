@@ -1,0 +1,30 @@
+---
+python_version: 3.5.1
+# Comand to run - install, create_superuser, stop
+command: 'install'
+npm_install: false
+
+# username of the github user installing services
+github_boot: 'change me'
+# repository containing the code to deploy
+github_repository: 'change me'
+#
+# Deployment key variables
+deploy_key_bucket: 'change me'
+deploy_key: 'change me'
+deploy_key_password: 'change me'
+
+# Base directory of service
+lux_service_path: '/var/opt'
+# Base directory of service logs
+lux_log_path: '/var/log'
+#
+# service user
+service_user: 'lux'
+service_name: 'lux'
+#
+# Can be a SHA1 hash, branch name, or tag name
+deploy_tag: 'master'
+#
+# Set during deployment - this is the unique name of deployment run
+lux_deploy_name: ''

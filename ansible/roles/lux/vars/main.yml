@@ -1,0 +1,16 @@
+#
+# home path of service user
+service_user_home: "{{ lux_service_path }}/{{ service_user }}"
+#
+# service home path
+service_home: "{{ service_user_home }}/{{ service_name }}"
+#
+# Service stage path
+service_path: "{{ service_home }}/running"
+
+content_dir: "{{ service_home }}/content"
+# Log directory
+service_log_path: "{{ lux_log_path }}/{{ service_user }}"
+#
+# Local template for service config.py file
+service_config_template: "templates/{{ service_name }}.config.py.j2"

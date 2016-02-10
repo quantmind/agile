@@ -1,0 +1,7 @@
+
+bind = ':{{ item.port }}'
+workers = {{ item.workers | Default(1) }}
+process_name = '{{ item.name }}'
+pidfile = '{{ item.name }}.pid'
+logconfig['handlers']['file']['filename'] = '{{ api_log_file }}'
+daemon = True

@@ -1,0 +1,22 @@
+---
+s3web_bucket: ""
+s3web_tags: {}
+s3web_zone: ""
+s3web_record: ""
+#
+# Route53 record type
+s3web_record_type: "A"
+s3web_record_value: ""
+#
+s3web_install_path: "{{ ansible_env.HOME }}"
+s3web_policy: |
+  {
+      "Statement": [
+          {
+              "Action": ["s3:GetObject"],
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::{{ s3web_bucket }}/*",
+              "Principal": "*"
+          }
+      ]
+  }

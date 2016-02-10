@@ -2,15 +2,16 @@
   - name: Install the npm package (Node Package Manager).
     apt: name=npm update_cache=yes
 
-  - name: Install grunt and bower globally using npm.
+  - name: Install grunt client globally using npm.
     npm: global=yes name={{item}}
     with_items:
       - grunt-cli
-      - grunt
-      - bower
 
 # There is a completely unrelated package called node,
 # which is why in Ubuntu, NodeJS package is called nodejs not node.
 # Grunt expects node, so we create a symlink node -> nodejs
   - name: Create symlink node -> nodejs
-    file: src=/usr/bin/nodejs dest=/usr/bin/node state=link
+    file:
+      src=/usr/bin/nodejs
+      dest=/usr/bin/node
+      state=link

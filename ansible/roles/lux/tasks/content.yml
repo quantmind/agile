@@ -1,0 +1,14 @@
+###
+#
+#
+---
+
+- name: Remove previously created content folder
+  file: path={{ content_dir }} state=absent
+
+- name: content source code from github repo
+  git:
+      dest={{ content_dir }}
+      repo="{{ content_repo }}"
+      accept_hostkey=True
+  when: content_repo != ""

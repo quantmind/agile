@@ -1,0 +1,14 @@
+---
+- name: Create S3 Bucket
+  s3_bucket:
+    name: "{{ s3web_bucket }}"
+    tags: "{{ s3web_tags }}"
+
+- name: Set Bucket Policy for S3
+  shell:
+    "aws s3api put-bucket-policy --bucket {{ s3web_bucket }} --policy '{{ s3web_policy | to_json }}'"
+
+- name: Set S3 Website Config
+  shell:
+    "aws s3 website {{ s3web_bucket }} --index-document index.html --error-document error.html"
+

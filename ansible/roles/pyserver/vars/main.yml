@@ -1,3 +1,2 @@
 ---
-pyenv_path: "{{ pyenv_owner_home }}/pyenv"
 pyenvrc: "{{ pyenv_path }}/.pyenvrc"

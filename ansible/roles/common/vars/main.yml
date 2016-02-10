@@ -1,0 +1,3 @@
+---
+pyenv_path: "{{ pyenv_owner_home }}/pyenv"
+python_bin: "{{ pyenv_path }}/versions/{{ python_version }}/bin"

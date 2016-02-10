@@ -1,0 +1,22 @@
+###
+#   Execute a command other than install and create_superuser
+#
+---
+- name: Create command create_superuser
+  command:
+    venv/bin/{{ service_name }}
+    create_superuser
+    --username {{ su_login }}
+    --email {{ su_email }}
+    --password {{ su_password }}
+  args:
+    chdir: "{{ install_dir }}"
+  when: command == "create_superuser
+
+- name: Execute command {{ command }}
+  command:
+    "venv/bin/{{ service_name }}"
+    "{{ command }}"
+  args:
+    chdir: "{{ install_dir }}"
+  when: command != "create_superuser

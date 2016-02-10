@@ -1,0 +1,8 @@
+- name: ensure aptitude is installed
+  apt: pkg=aptitude state=present
+
+- name: update apt {{ ansible_env.USER }}
+  apt: update_cache=yes upgrade=full cache_valid_time=86400 force=yes
+
+- name: install awscli package
+  apt: pkg=awscli state=present force=yes

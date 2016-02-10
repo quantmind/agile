@@ -1,0 +1,13 @@
+---
+git_user: ""
+#
+# Python version to use
+python_version: 3.5.1
+#
+# defaults for pyenv
+pyenv_owner: "{{ ansible_env.USER }}"
+pyenv_owner_home: "{{ ansible_env.HOME }}"
+
+# Redis - client configuration
+redis_port: 6379
+redis_host: '127.0.0.1'

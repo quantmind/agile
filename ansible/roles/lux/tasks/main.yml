@@ -1,0 +1,24 @@
+---
+- name: Check if service path {{ service_path }}/venv is available
+  stat: path={{ service_path }}/venv
+  register: venv_path
+
+- debug: var=venv_path
+
+- name: Cannot install
+  fail: msg='{{ service_path }} is already available'
+  when: command == "install" and venv_path.stat.exists and venv_path.stat.isdir
+
+- include: admin.yml
+  when: command == "install"
+
+- include: install.yml
+  when: command == "install"
+  become: yes
+  become_user: "{{ service_user }}"
+
+- include: content.yml sudo=yes
+  when: command == "install"
+
+- include: command.yml sudo=yes
+  when: command != 'install' and venv_path.stat.exists and venv_path.stat.isdir

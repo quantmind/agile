@@ -5,7 +5,5 @@
 
   hosts: all
 
-  become: True
-
   roles:
     - pyserver

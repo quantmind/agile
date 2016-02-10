@@ -1,0 +1,70 @@
+## Download source code from github
+#
+---
+- name: Get the timestamp
+  set_fact: install_dir="{{service_home}}/{{lookup('pipe','date +%Y%m%d%H%M%S')}}"
+
+- debug: var=install_dir
+
+- name: Create installation directory {{ install_dir }}
+  file:
+    path={{ install_dir }}
+    state=directory
+    mode=0755
+    owner={{ service_user }}
+
+- name: create python {{ python_version }} virtual enviroment in {{ install_dir }}/venv
+  shell:
+      "{{ python_bin }}/virtualenv --system-site-packages {{ install_dir }}/venv"
+
+- name: Getting source code from {{ github_repository }}@{{ deploy_tag }}
+  git:
+      dest={{ install_dir }}/repo
+      repo={{ github_repository }}
+      version={{ deploy_tag }}
+      accept_hostkey=True
+      recursive=no
+
+- name: Install requirements-pre.txt via pip
+  pip:
+      virtualenv={{ install_dir }}/venv
+      chdir="{{ install_dir }}/repo"
+      requirements=requirements-pre.txt
+
+- name: Install requirements.txt via pip
+  pip:
+      virtualenv={{ install_dir }}/venv
+      chdir="{{ install_dir }}/repo"
+      requirements=requirements.txt
+
+- name: npm install project dependencies in {{ install_dir }}/repo
+  npm: path={{ install_dir }}/repo
+  when: npm_install
+
+- name: grunt build (creates js and css bundles)
+  command: "{{ install_dir }}/venv/bin/python manage.py exec grunt"
+  args:
+    chdir: "{{ install_dir }}/repo"
+  when: npm_install
+
+- name: configuring {{ service_name }}/config.py file
+  template:
+    src="{{ service_config_template }}"
+    dest="{{ install_dir }}/repo/{{ service_name }}/config.py"
+
+- name: Create logrotate configuration.
+  template:
+    src=lux-logrotate.txt.j2
+    dest="/etc/logrotate.d/{{ service_name }}"
+  become: yes
+  become_user: root
+
+- name: Change permission to logrotate
+  file:
+    path="/etc/logrotate.d/{{ service_name }}"
+    mode=0644
+    owner=root
+    group=root
+  become: yes
+  become_user: root
+

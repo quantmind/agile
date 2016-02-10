@@ -1,0 +1,11 @@
+---
+- name: Create NS Hosted Zone
+  route53:
+    command: create
+    zone: "{{ s3web_zone }}"
+    record: "{{ s3web_record }}"
+    overwrite: true
+    type: "{{ s3web_record_type }}"
+    ttl: 300
+    value: "{{ s3web_record_value }}"
+  when: s3web_record != "" and s3web_record_value != ""

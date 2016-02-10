@@ -1,0 +1,44 @@
+###
+#
+# Add the service user and make sure keys are installed in the .ssh directory
+#
+---
+- name: Add "{{ service_user }}" service user
+  user:
+    name={{ service_user }}
+    comment="User for {{ service_user }} services"
+    home={{ service_user_home }}
+    shell=/bin/bash
+    system=yes
+  when: inventory != 'local'
+  become: yes
+
+- name: Make sure "{{ service_user_home }}/.ssh" directory is available and owned by "{{ service_user }}"
+  file:
+    path="{{ service_user_home }}/.ssh"
+    owner={{ service_user }}
+    state=directory
+  become: yes
+
+- name: Make sure "{{ service_log_path }}" log directory is available and owned by {{ service_user }}
+  file:
+    path={{ service_log_path }}
+    owner={{ service_user }}
+    state=directory
+  become: yes
+
+- name: Copy GitHub key for "{{ github_boot }}" user
+  s3:
+    bucket={{ deploy_key_bucket }}
+    object="{{ deploy_key }}"
+    dest="{{ service_user_home }}/.ssh/id_rsa"
+    mode=get
+  become: yes
+  become_user: "{{ service_user }}"
+
+- name: Make sure key is protected
+  file:
+    path="{{ service_user_home }}/.ssh/id_rsa"
+    mode=0600
+  become: yes
+  become_user: "{{ service_user }}"

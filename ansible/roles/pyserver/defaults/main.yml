@@ -1,9 +1,5 @@
 ---
 #
-# defaults file for pyenv
-pyenv_owner: "{{ ansible_env.USER }}"
-pyenv_owner_home: "{{ ansible_env.HOME }}"
-#
 # Make sure pyenv is up-to-date
 pyenv_update_git_install: yes
 #
