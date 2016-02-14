@@ -1,7 +1,18 @@
+from pulsar.utils.log import LOGGING_CONFIG as logconfig
 
-bind = ':{{ item.port }}'
-workers = {{ item.workers | Default(1) }}
-process_name = '{{ item.name }}'
-pidfile = '{{ item.name }}.pid'
-logconfig['handlers']['file']['filename'] = '{{ api_log_file }}'
+redis_server = 'redis://{{ redis_host }}:{{ redis_port }}'
+CACHE_SERVER = '%s/3' % redis_server
+PUBSUB_STORE = data_store = '%s/4' % redis_server
+
+
+logconfig['handlers']['file'] = {
+    'class': 'logging.FileHandler',
+    'formatter': 'verbose',
+    'filename': '{{ service_log_path }}/{{ service_name }}.log'
+}
+
+bind = '{{ service_bind }}'
+workers = {{ service_workers }}
+process_name = '{{ service_name }}'
+pidfile = '{{ service_name }}.pid'
 daemon = True

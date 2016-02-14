@@ -42,10 +42,22 @@
   when: npm_install
 
 - name: grunt build (creates js and css bundles)
-  command: "{{ install_dir }}/venv/bin/python manage.py exec grunt"
+  shell: grunt
   args:
     chdir: "{{ install_dir }}/repo"
+  environment:
+    PATH: "{{ install_dir }}/venv/bin:{{ ansible_env.PATH }}"
   when: npm_install
+
+- name: Remove {{ install_dir }}/repo/node_modules
+  file:
+    path="{{ install_dir }}/repo/node_modules"
+    state=absent
+
+- name: configuring {{ service_name }}/server_config.py file
+  template:
+    src=config.py.j2
+    dest="{{ install_dir }}/repo/{{ service_name }}/server_config.py"
 
 - name: configuring {{ service_name }}/config.py file
   template:

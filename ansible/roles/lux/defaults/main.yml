@@ -26,5 +26,7 @@ service_name: 'lux'
 # Can be a SHA1 hash, branch name, or tag name
 deploy_tag: 'master'
 #
-# Set during deployment - this is the unique name of deployment run
-lux_deploy_name: ''
+# Pulsar configuration
+service_workers: 1
+service_bind: ':8060'
+

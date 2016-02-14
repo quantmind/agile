@@ -12,10 +12,29 @@ from pulsar import ImproperlyConfigured, as_coroutine
 class AgileApps(list):
 
     def __call__(self, manager):
+        commands = command_map(manager.cfg.commands)
         for App in self:
             app = App(manager)
-            if app.can_run():
-                yield from as_coroutine(app())
+            if app.command not in manager.config:
+                continue
+            if commands and app.command not in commands:
+                continue
+            config = manager.config[app.command]
+            options = config.pop('options', {})
+            args = commands.get(app.command) or tuple(config)
+            for entry in args:
+                cfg = config.get(entry)
+                if cfg:
+                    try:
+                        if not isinstance(cfg, dict):
+                            raise ImproperlyConfigured(
+                                '%s entry not valid' % entry)
+                        yield from as_coroutine(app(entry, cfg, options))
+                    except ImproperlyConfigured as exc:
+                        if manager.cfg.force:
+                            app.logger.error(exc)
+                        else:
+                            raise
 
 
 agile_apps = AgileApps()
@@ -26,35 +45,29 @@ class AgileMeta(type):
     in the global ``KNOWN_SETTINGS`` list.
     """
     def __new__(cls, name, bases, attrs):
+        abstract = attrs.pop('abstract', False)
+        attrs['command'] = attrs.pop('command', name.lower())
         new_class = super().__new__(cls, name, bases, attrs)
-        new_class.logger = logging.getLogger('agile.%s' % name.lower())
-        agile_apps.append(new_class)
+        new_class.logger = logging.getLogger('agile.%s' % new_class.command)
+        if not abstract:
+            agile_apps.append(new_class)
         return new_class
 
 
 class AgileApp(metaclass=AgileMeta):
     """Base class for agile applications
     """
+    abstract = True
+    description = 'Agile application'
+
     def __init__(self, app):
         self.app = app
 
-    @property
-    def cfg(self):
-        return self.app.cfg
-
-    @property
-    def git(self):
-        return self.app.git
-
-    @property
-    def gitapi(self):
-        return self.app.gitapi
-
-    def can_run(self):
-        return getattr(self.cfg, self.__class__.__name__.lower(), False)
-
-    def __call__(self):
+    def __call__(self, entry, cfg, options):
         pass
+
+    def __getattr__(self, name):
+        return getattr(self.app, name)
 
 
 class AgileSetting(pulsar.Setting):
@@ -63,13 +76,29 @@ class AgileSetting(pulsar.Setting):
     section = "Git Agile"
 
 
-def execute(*args):
+def command_map(commands):
+    cmap = {}
+    for name in commands:
+        bits = name.split(':')
+        key = bits[0]
+        if key not in cmap:
+            cmap[key] = []
+        if len(bits) == 2:
+            entry = cmap[key]
+            if bits[1] not in entry:
+                entry.append(bits[1])
+        elif len(bits) > 2:
+            raise ImproperlyConfigured('bad command %s' % name)
+    return cmap
+
+
+def execute(command):
     """Execute a shell command
     :param args: a given number of command parameters
     :return: the output text
     """
-    proc = yield from asyncio.create_subprocess_exec(
-        *args, stdout=asyncio.subprocess.PIPE,
+    proc = yield from asyncio.create_subprocess_shell(
+        command, stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT)
     yield from proc.wait()
     data = yield from proc.stdout.read()
@@ -177,3 +206,11 @@ def write_notes(manager, release):
 
     if add_file:
         yield from manager.git.add(filename)
+
+
+def as_list(entry, msg=None):
+    if entry and not isinstance(entry, list):
+        entry = [entry]
+    if not entry:
+        raise ImproperlyConfigured(msg or 'Not a valid entry')
+    return entry

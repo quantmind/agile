@@ -8,8 +8,7 @@ class Git:
 
     @classmethod
     def create(cls):
-        remote = yield from execute('git', 'config', '--get',
-                                    'remote.origin.url')
+        remote = yield from execute('git config --get remote.origin.url')
         raw = remote.split('@')
         assert len(raw), 2
         raw = raw[1]
@@ -34,16 +33,16 @@ class Git:
         raise NotImplementedError
 
     def toplevel(self):
-        level = yield from execute('git', 'rev-parse', '--show-toplevel')
+        level = yield from execute('git rev-parse --show-toplevel')
         return level
 
     def branch(self):
-        name = yield from execute('git', 'rev-parse', '--abbrev-ref', 'HEAD')
+        name = yield from execute('git rev-parse --abbrev-ref HEAD')
         return name
 
     def add(self, *files):
         if files:
-            result = yield from execute('git', 'add', *files)
+            result = yield from execute('git add %s' % ' '.join(files))
             return result
 
     def commit(self, *files, msg=None):
@@ -52,12 +51,12 @@ class Git:
         files = list(files)
         files.append('-m')
         files.append(msg or 'commit from pulsar.release manager')
-        result = yield from execute('git', 'commit', *files)
+        result = yield from execute('git commit %s' % ' '.join(files))
         return result
 
     def push(self):
         name = yield from self.branch()
-        result = yield from execute('git', 'push', 'origin', name)
+        result = yield from execute('git push origin %s' % name)
         if '[rejected]' in result:
             raise RuntimeError(result)
         return result
@@ -65,8 +64,8 @@ class Git:
 
 class Github(Git):
 
-    def api(self):
-        return GithubApi()
+    def api(self, **kw):
+        return GithubApi(**kw)
 
 
 def Gitlab(Git):

@@ -3,18 +3,11 @@ import json
 
 from pulsar import ImproperlyConfigured
 
-from .utils import AgileSetting, AgileApp
-
-
-class LabelsSetting(AgileSetting):
-    name = "labels"
-    flags = ['--labels']
-    action = "store_true"
-    default = False
-    desc = "update labels"
+from ..utils import AgileApp
 
 
 class Labels(AgileApp):
+    description = 'Set labels in github issues'
 
     def can_run(self):
         return self.cfg.labels

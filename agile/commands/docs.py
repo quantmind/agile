@@ -5,7 +5,7 @@ from pulsar import ImproperlyConfigured, validate_dict
 
 from cloud import aws
 
-from .utils import AgileSetting, AgileApp, execute
+from ..utils import AgileSetting, AgileApp, execute
 
 
 class DocsSetting(AgileSetting):
@@ -38,7 +38,12 @@ content_types = {'fjson': 'application/json',
 class Docs(AgileApp):
     """Requires a valid sphinx installation
     """
-    def __call__(self):
+    description = 'Compile sphinx docs and upload them to aws'
+
+    def __call__(self, config, args):
+        yield from self.for_each(self.docs, config, args)
+
+    def docs(self, entry, config):
         path = os.path.join(self.app.repo_path, 'docs')
         if not os.path.isdir(path):
             raise ImproperlyConfigured('path "%s" missing' % path)
@@ -71,8 +76,9 @@ class Docs(AgileApp):
             url = '%s/%s' % (docs, url)
         self.logger.info('Preparing to upload to "%s/%s"',
                          self.cfg.docs_bucket, url)
+        aws_config = self.config['docs'].get('aws_config', {})
         s3 = aws.AsyncioBotocore('s3', http_session=self.gitapi.http,
-                                 **self.cfg.aws_config)
+                                 **aws_config)
         yield from s3.upload_folder(self.cfg.docs_bucket, path, url,
                                     skip=['environment.pickle', 'last_build'],
                                     content_types=content_types)

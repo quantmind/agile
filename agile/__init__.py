@@ -19,9 +19,7 @@ __version__ = '.'.join((str(v) for v in VERSION))
 
 if os.environ.get('agile_setup') != 'yes':
     from pulsar.utils.version import get_version
-    from . import release   # noqa
-    from . import labels    # noqa
-    from . import docs      # noqa
+    from . import commands   # noqa
     from .app import AgileManager
 
     __version__ = version = get_version(VERSION, __file__)
