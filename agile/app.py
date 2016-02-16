@@ -9,7 +9,8 @@ import pulsar
 from pulsar import ensure_future, ImproperlyConfigured
 
 from .git import Git
-from .utils import agile_apps, AgileSetting, AgileError, as_dict, as_list
+from .utils import (agile_apps, AgileSetting, AgileError, AgileExit,
+                    as_dict, as_list)
 
 
 exclude = set(pulsar.Config().settings)
@@ -31,7 +32,7 @@ class ConfigFile(AgileSetting):
         """
 
 
-class Commit(AgileSetting):
+class ListTasks(AgileSetting):
     name = "list_tasks"
     flags = ['-l', '--list-tasks']
     action = "store_true"
@@ -45,6 +46,14 @@ class Force(AgileSetting):
     action = "store_true"
     default = False
     desc = "Force execution when errors occur"
+
+
+class Commit(AgileSetting):
+    name = "commit"
+    flags = ['--commit']
+    action = "store_true"
+    default = False
+    desc = "Commit changes to git"
 
 
 class AgileManager(pulsar.Application):
@@ -84,7 +93,7 @@ class AgileManager(pulsar.Application):
         self.context = {'python': sys.executable}
         self.logger = logging.getLogger('agile')
         exit_code = 1
-        later = 1
+        later = 0
         try:
             self.git = yield from Git.create()
             self.gitapi = self.git.api()
@@ -94,9 +103,11 @@ class AgileManager(pulsar.Application):
             self.config = self._load_agile_config()
             if self.cfg.list_tasks:
                 self._list_tasks()
-                later = 0
             else:
+                later = 1
                 yield from self._execute(worker)
+        except AgileExit as exc:
+            self.logger.error(str(exc))
         except (ImproperlyConfigured, AgileError) as exc:
             self.logger.error(str(exc))
             self.logger.info('Execution stopped. '
@@ -108,7 +119,7 @@ class AgileManager(pulsar.Application):
 
         if self.gitapi:
             self.gitapi.http.close()
-        self.logger.info("Exiting")
+        self.logger.info("Exiting %d", later)
         worker._loop.call_later(later, self._exit, exit_code)
 
     def _execute(self, worker):
@@ -134,8 +145,8 @@ class AgileManager(pulsar.Application):
     def _list_tasks(self):
         tasks = self.config.get('tasks')
         if not tasks:
-            raise ImproperlyConfigured('No "tasks" entry in your %s file' %
-                                       self.cfg.config_file)
+            raise AgileExit('No "tasks" entry in your %s file' %
+                            self.cfg.config_file)
         print('')
         print('==========================================')
         print('There are %d tasks available' % len(tasks))

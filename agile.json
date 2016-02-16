@@ -1,3 +1,11 @@
 {
-    "release":""
+    "release": {
+        "note_file": "docs/notes.md"
+    },
+    "docs": {
+        "aws_bucket": "quantmind-docs"
+    },
+    "tasks": {
+        "release": ["release"]
+    }
 }

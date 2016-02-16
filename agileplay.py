@@ -1,8 +1,7 @@
 from agile import AgileManager
 
 app_module = 'agile'
-note_file = 'docs/notes.md'
-docs_bucket = 'quantmind-docs'
 
 if __name__ == '__main__':
-    AgileManager(config='release.py').start()
+    AgileManager(description='Release manager for pulsar-agile',
+                 config='agileplay.py').start()

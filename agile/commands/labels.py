@@ -9,10 +9,7 @@ from ..utils import AgileApp
 class Labels(AgileApp):
     description = 'Set labels in github issues'
 
-    def can_run(self):
-        return self.cfg.labels
-
-    def __call__(self):
+    def __call__(self, name, config, options):
         label_file = os.path.join(self.app.releases_path, 'labels.json')
         if not label_file:
             raise ImproperlyConfigured('No label file %s' % label_file)

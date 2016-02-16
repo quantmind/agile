@@ -14,6 +14,10 @@ class AgileError(Exception):
     pass
 
 
+class AgileExit(AgileError):
+    pass
+
+
 class ShellError(AgileError):
 
     def __init__(self, msg, code):

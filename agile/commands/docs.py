@@ -40,10 +40,7 @@ class Docs(AgileApp):
     """
     description = 'Compile sphinx docs and upload them to aws'
 
-    def __call__(self, config, args):
-        yield from self.for_each(self.docs, config, args)
-
-    def docs(self, entry, config):
+    def __call__(self, name, config, options):
         path = os.path.join(self.app.repo_path, 'docs')
         if not os.path.isdir(path):
             raise ImproperlyConfigured('path "%s" missing' % path)

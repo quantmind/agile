@@ -9,14 +9,6 @@ from ..utils import (passthrough, change_version,
                      AgileSetting, AgileApp)
 
 
-class Commit(AgileSetting):
-    name = "commit"
-    flags = ['--commit']
-    action = "store_true"
-    default = False
-    desc = "Commit changes"
-
-
 class BeforeCommit(AgileSetting):
     name = "before_commit"
     validator = pulsar.validate_callable(2)
@@ -52,14 +44,11 @@ class ChangeVersion(AgileSetting):
         Change the version number in the code
         """
 
-exclude = set(pulsar.Config().settings)
-exclude.difference_update(('config', 'loglevel', 'debug'))
-
 
 class Release(AgileApp):
     description = 'Make a new release'
 
-    def __call__(self):
+    def __call__(self, name, config, options):
         git = self.git
         gitapi = self.gitapi
 
