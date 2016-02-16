@@ -4,7 +4,7 @@ from urllib.parse import urlsplit
 
 from pulsar import ImproperlyConfigured
 
-from ..utils import AgileSetting, AgileApp, as_list
+from ..utils import AgileApp, as_list
 
 
 class HttpCopy(AgileApp):

@@ -1,12 +1,11 @@
 '''Pulsar app for creating releases. Used by pulsar.
 '''
 import os
-import json
 
 import pulsar
 from pulsar import ImproperlyConfigured, as_coroutine
 
-from ..utils import (passthrough, change_version, write_notes,
+from ..utils import (passthrough, change_version,
                      AgileSetting, AgileApp)
 
 
@@ -26,6 +25,7 @@ class BeforeCommit(AgileSetting):
     desc = """\
         Callback invoked before committing changes
         """
+
 
 class Push(AgileSetting):
     name = "push"

@@ -4,37 +4,57 @@ import logging
 import configparser
 from datetime import date
 from importlib import import_module
+from collections import Mapping
 
 import pulsar
 from pulsar import ImproperlyConfigured, as_coroutine
 
 
-class AgileApps(list):
+class AgileError(Exception):
+    pass
 
-    def __call__(self, manager):
-        commands = command_map(manager.cfg.commands)
-        for App in self:
-            app = App(manager)
-            if app.command not in manager.config:
-                continue
-            if commands and app.command not in commands:
-                continue
-            config = manager.config[app.command]
-            options = config.pop('options', {})
-            args = commands.get(app.command) or tuple(config)
-            for entry in args:
-                cfg = config.get(entry)
-                if cfg:
-                    try:
-                        if not isinstance(cfg, dict):
-                            raise ImproperlyConfigured(
-                                '%s entry not valid' % entry)
-                        yield from as_coroutine(app(entry, cfg, options))
-                    except ImproperlyConfigured as exc:
-                        if manager.cfg.force:
-                            app.logger.error(exc)
-                        else:
-                            raise
+
+class ShellError(AgileError):
+
+    def __init__(self, msg, code):
+        super().__init__(msg)
+        self.code = code
+
+
+class AgileApps(dict):
+
+    def __call__(self, manager, command):
+        bits = command.split(':')
+        key = bits[0]
+        entry = None
+        if len(bits) == 2:
+            entry = bits[1]
+        elif len(bits) > 2:
+            raise ImproperlyConfigured('bad command %s' % command)
+
+        App = self.get(key)
+        if not App:
+            raise ImproperlyConfigured('No such command "%s"' % key)
+
+        config = manager.config.get(key)
+        if not config:
+            raise ImproperlyConfigured('No entry "%s" in %s' %
+                                       (key, manager.cfg.config_file))
+
+        options = config.pop('options', {})
+        app = App(manager)
+
+        if entry is not None:
+            cfg = config.get(entry)
+            if not cfg:
+                raise ImproperlyConfigured('No entry "%s" in %s' %
+                                           (command, manager.cfg.config_file))
+            cfg = as_dict(cfg, '%s entry not valid' % entry)
+            yield from as_coroutine(app(entry, cfg, options))
+        else:
+            for entry, cfg in config.items():
+                cfg = as_dict(cfg, '%s entry not valid' % entry)
+                yield from as_coroutine(app(entry, cfg, options))
 
 
 agile_apps = AgileApps()
@@ -50,7 +70,7 @@ class AgileMeta(type):
         new_class = super().__new__(cls, name, bases, attrs)
         new_class.logger = logging.getLogger('agile.%s' % new_class.command)
         if not abstract:
-            agile_apps.append(new_class)
+            agile_apps[new_class.command] = new_class
         return new_class
 
 
@@ -76,22 +96,6 @@ class AgileSetting(pulsar.Setting):
     section = "Git Agile"
 
 
-def command_map(commands):
-    cmap = {}
-    for name in commands:
-        bits = name.split(':')
-        key = bits[0]
-        if key not in cmap:
-            cmap[key] = []
-        if len(bits) == 2:
-            entry = cmap[key]
-            if bits[1] not in entry:
-                entry.append(bits[1])
-        elif len(bits) > 2:
-            raise ImproperlyConfigured('bad command %s' % name)
-    return cmap
-
-
 def execute(command):
     """Execute a shell command
     :param args: a given number of command parameters
@@ -101,8 +105,11 @@ def execute(command):
         command, stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT)
     yield from proc.wait()
-    data = yield from proc.stdout.read()
-    return data.decode('utf-8').strip()
+    msg = yield from proc.stdout.read()
+    msg = msg.decode('utf-8').strip()
+    if proc.returncode:
+        raise ShellError(msg, proc.returncode)
+    return msg
 
 
 def passthrough(manager, version):
@@ -212,5 +219,11 @@ def as_list(entry, msg=None):
     if entry and not isinstance(entry, list):
         entry = [entry]
     if not entry:
+        raise ImproperlyConfigured(msg or 'Not a valid entry')
+    return entry
+
+
+def as_dict(entry, msg=None):
+    if not isinstance(entry, Mapping):
         raise ImproperlyConfigured(msg or 'Not a valid entry')
     return entry

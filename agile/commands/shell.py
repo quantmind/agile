@@ -1,5 +1,3 @@
-from pulsar import ImproperlyConfigured
-
 from ..utils import AgileApp, as_list, execute
 
 
@@ -13,13 +11,10 @@ class Shell(AgileApp):
         results = []
         for com in coms:
             com = self.render(com)
+            self.logger.info('executing shell:%s - %s', name, com)
             text = yield from execute(com)
-            self.logger.debug('executed shell:%s -> %s', name, com)
             if text:
+                self.logger.debug('\n%s', text, extra=dict(color=False))
                 results.append(text)
-        text = ' && '.join(results)
-        if text:
-            self.context[name] = text
-            self.logger.info('executed shell:%s -> %s', name, text)
-        else:
-            self.logger.info('executed shell:%s', name)
+        if results:
+            self.context[name] = results if len(results) > 1 else results[0]

@@ -1,24 +1,25 @@
 import os
+import sys
 import json
 import logging
 from string import Template
 from collections import OrderedDict
 
 import pulsar
-from pulsar import ensure_future, ImproperlyConfigured, as_coroutine
+from pulsar import ensure_future, ImproperlyConfigured
 
 from .git import Git
-from .utils import agile_apps, AgileSetting
+from .utils import agile_apps, AgileSetting, AgileError, as_dict, as_list
 
 
 exclude = set(pulsar.Config().settings)
-exclude.difference_update(('config', 'loglevel', 'debug'))
+exclude.difference_update(('config', 'loglevel', 'loghandlers', 'debug'))
 
 
-class Command(AgileSetting):
-    name  = 'commands'
+class Tasks(AgileSetting):
+    name = 'tasks'
     nargs = '*'
-    desc = "command to run - For a list of command --list-commands"
+    desc = "tasks to run - For the list of tasks pass -l or --list-tasks"
 
 
 class ConfigFile(AgileSetting):
@@ -31,17 +32,26 @@ class ConfigFile(AgileSetting):
 
 
 class Commit(AgileSetting):
-    name = "list_commands"
-    flags = ['-l', '--list-commands']
+    name = "list_tasks"
+    flags = ['-l', '--list-tasks']
     action = "store_true"
     default = False
-    desc = "List available commands"
+    desc = "List of available tasks"
+
+
+class Force(AgileSetting):
+    name = "force"
+    flags = ['--force']
+    action = "store_true"
+    default = False
+    desc = "Force execution when errors occur"
 
 
 class AgileManager(pulsar.Application):
     name = 'agile'
     cfg = pulsar.Config(apps=['agile'],
                         loglevel=['pulsar.error', 'info'],
+                        loghandlers=['console_name_level_message'],
                         description='Agile release manager',
                         exclude=exclude)
     git = None
@@ -71,18 +81,26 @@ class AgileManager(pulsar.Application):
         return Template(text).safe_substitute(context) if context else text
 
     def _start_agile(self, worker):
-        self.context = {}
+        self.context = {'python': sys.executable}
         self.logger = logging.getLogger('agile')
         exit_code = 1
         later = 1
         try:
-            if self.cfg.list_commands:
-                self._list_commands()
+            self.git = yield from Git.create()
+            self.gitapi = self.git.api()
+            self.repo_path = yield from self.git.toplevel()
+            self.context['repo_path'] = self.repo_path
+            self.logger.debug('Repository directory %s', self.repo_path)
+            self.config = self._load_agile_config()
+            if self.cfg.list_tasks:
+                self._list_tasks()
                 later = 0
             else:
                 yield from self._execute(worker)
-        except ImproperlyConfigured as exc:
+        except (ImproperlyConfigured, AgileError) as exc:
             self.logger.error(str(exc))
+            self.logger.info('Execution stopped. '
+                             'Pass --force to force executions on errors')
         except Exception as exc:
             self.logger.exception(str(exc))
         else:
@@ -94,18 +112,35 @@ class AgileManager(pulsar.Application):
         worker._loop.call_later(later, self._exit, exit_code)
 
     def _execute(self, worker):
-        self.git = yield from Git.create()
-        self.gitapi = self.git.api()
-        self.repo_path = yield from self.git.toplevel()
-        self.context['repo_path'] = self.repo_path
-        self.logger.info('Repository directory %s', self.repo_path)
-        self.config = self._load_agile_config()
-        yield from agile_apps(self)
+        all_tasks = self.config['tasks']
+        tasks = tuple(self.cfg.tasks or self.config['tasks'])
+        for task in tasks:
+            if task not in all_tasks:
+                raise ImproperlyConfigured('No such task "%s"' % task)
+            info = as_dict(all_tasks[task], 'Task should be a dictionary')
+            commands = as_list(info.get('command'),
+                               'No command entry for "%s" task' % task)
+            self.logger.info('Executing "%s" task - %s' %
+                             (task, task_description(info)))
+            for command in commands:
+                try:
+                    yield from agile_apps(self, command)
+                except (ImproperlyConfigured, AgileError) as exc:
+                    if self.cfg.force:
+                        self.logger.error(exc)
+                    else:
+                        raise
 
-    def _list_commands(self):
+    def _list_tasks(self):
+        tasks = self.config.get('tasks')
+        if not tasks:
+            raise ImproperlyConfigured('No "tasks" entry in your %s file' %
+                                       self.cfg.config_file)
         print('')
-        for App in agile_apps:
-            print('%s: %s' % (App.command, App.description))
+        print('There are %d tasks available' % len(tasks))
+        print('')
+        for name, task in tasks.items():
+            print('%s: %s' % (name, task_description(task)))
         print('')
 
     def _exit(self, exit_code):
@@ -120,3 +155,7 @@ class AgileManager(pulsar.Application):
             config = file.read()
         decoder = json.JSONDecoder(object_pairs_hook=OrderedDict)
         return decoder.decode(config)
+
+
+def task_description(task):
+    return task.get("description", "no description given")

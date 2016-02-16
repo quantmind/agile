@@ -1,4 +1,4 @@
-"""Tools for managing releases and issue tracking
+"""Python toolkit for building, managing releases and issue tracking
 """
 import os
 
