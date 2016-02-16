@@ -137,11 +137,14 @@ class AgileManager(pulsar.Application):
             raise ImproperlyConfigured('No "tasks" entry in your %s file' %
                                        self.cfg.config_file)
         print('')
+        print('==========================================')
         print('There are %d tasks available' % len(tasks))
+        print('==========================================')
         print('')
         for name, task in tasks.items():
             print('%s: %s' % (name, task_description(task)))
         print('')
+        print('==========================================')
 
     def _exit(self, exit_code):
         pulsar.arbiter().stop(exit_code=exit_code)
