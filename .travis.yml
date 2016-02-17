@@ -4,12 +4,8 @@ python:
   - 3.4.3
   - 3.5.1
 
-install:
-  - python setup.py install
-
 script:
   - flake8
-  - rm -rf agile build pulsar_agile.egg-info dist
   - python -m runtests --coverage --log-level info
   - if [[ $TRAVIS_PYTHON_VERSION == 3.5.1 ]]; then python -m runtests --coveralls; fi
 
