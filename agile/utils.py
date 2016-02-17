@@ -231,3 +231,40 @@ def as_dict(entry, msg=None):
     if not isinstance(entry, Mapping):
         raise ImproperlyConfigured(msg or 'Not a valid entry')
     return entry
+
+
+def task_description(task):
+    return task.get("description", "no description given")
+
+
+class TaskCommand:
+
+    def __init__(self, manager, task, running=None):
+        self.manager = manager
+        self.task = task
+        self.running = set(running or ())
+        if task not in self.all_tasks:
+            raise ImproperlyConfigured('No such task "%s"' % task)
+        self.info = as_dict(self.all_tasks[task],
+                            'Task should be a dictionary')
+        self.commands = as_list(self.info.get('command'),
+                                'No command entry for "%s" task' % task)
+        self.running.add(task)
+
+    @property
+    def all_tasks(self):
+        return self.manager.config['tasks']
+
+    def __call__(self):
+        self.manager.logger.info('Executing "%s" task - %s' %
+                                 (self.task, task_description(self.info)))
+        for command in self.commands:
+            if command in self.running:
+                raise ImproperlyConfigured('command already running')
+
+            if command in self.all_tasks:
+                # the command is another task
+                command = TaskCommand(self.manager, command, self.running)
+                yield from command()
+            else:
+                yield from agile_apps(self.manager, command)

@@ -1,0 +1,12 @@
+{
+    "shell": {
+        "test1": {
+            "command": "ls -la"
+        }
+    },
+    "tasks": {
+        "show": {
+            "command": ["shell:test1"]
+        }
+    }
+}
