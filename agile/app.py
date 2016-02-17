@@ -93,7 +93,7 @@ class AgileManager(pulsar.Application):
         return Template(text).safe_substitute(context) if context else text
 
     def agile(self):
-        """ Execute a set of tasks agains a configuration file
+        """ Execute a set of tasks against a configuration file
 
         :return: status code (0 - no errors, 1 - errors, 2 - critical errors)
         """

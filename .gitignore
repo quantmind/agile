@@ -15,4 +15,4 @@ __pycache__
 build
 _build
 dist
-git_agile.egg-info
+*.egg-info

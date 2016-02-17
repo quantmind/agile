@@ -7,6 +7,7 @@ try:
 except ImportError:
     os.environ['agile_setup'] = 'yes'
 
+name = 'pulsar-agile'
 mod = __import__('agile')
 this_dir = os.path.dirname(__file__)
 req_path = os.path.join(this_dir, 'requirements.txt')
@@ -38,12 +39,12 @@ parse_requirements(req_path)
 if __name__ == '__main__':
 
     setup(
-        name='git-agile',
+        name=name,
         version=mod.__version__,
         packages=find_packages(exclude=['tests', 'tests.*']),
         description=mod.__doc__,
         long_description=read('README.rst'),
-        url='https://github.com/quantmind/agile',
+        url='https://github.com/quantmind/%s' % name,
         include_package_data=True,
         zip_safe=False,
         install_requires=install_requires,
