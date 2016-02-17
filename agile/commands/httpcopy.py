@@ -10,7 +10,7 @@ from ..utils import AgileApp, as_list
 class HttpCopy(AgileApp):
     description = 'Copy remote files to local ones via Http'
 
-    def __call__(self, name, cfg, options):
+    async def __call__(self, name, cfg, options):
         srcs = as_list(cfg.get('src'), 'missing src')
         target = cfg.get('target')
         if not target:
@@ -18,10 +18,10 @@ class HttpCopy(AgileApp):
         requests = []
         for src in srcs:
             requests.append(self._http_and_copy(src, target))
-        yield from asyncio.gather(*requests)
+        await asyncio.gather(*requests)
 
-    def _http_and_copy(self, src, target):
-        response = yield from self.http.get(src)
+    async def _http_and_copy(self, src, target):
+        response = await self.http.get(src)
         response.raise_for_status()
         path, target = os.path.split(target)
         if not os.path.isdir(path):

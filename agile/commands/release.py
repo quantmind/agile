@@ -48,7 +48,7 @@ class ChangeVersion(AgileSetting):
 class Release(AgileApp):
     description = 'Make a new release'
 
-    def __call__(self, name, config, options):
+    async def __call__(self, name, config, options):
         git = self.git
         gitapi = self.gitapi
 
@@ -61,29 +61,29 @@ class Release(AgileApp):
         with open(self.app.note_file, 'r') as file:
             release['body'] = file.read().strip()
 
-        yield from as_coroutine(self.cfg.before_commit(self, release))
+        await as_coroutine(self.cfg.before_commit(self, release))
 
         # Validate new tag and write the new version
         tag_name = release['tag_name']
         repo = gitapi.repo(git.repo_path)
-        version = yield from repo.validate_tag(tag_name)
+        version = await repo.validate_tag(tag_name)
         self.logger.info('Bump to version %s', version)
         self.cfg.change_version(self.app, tuple(version))
         #
         if self.cfg.commit or self.cfg.push:
             #
             # Add release note to the changelog
-            yield from as_coroutine(self.cfg.write_notes(self.app, release))
+            await as_coroutine(self.cfg.write_notes(self.app, release))
             self.logger.info('Commit changes')
-            result = yield from git.commit(msg='Release %s' % tag_name)
+            result = await git.commit(msg='Release %s' % tag_name)
             self.logger.info(result)
             if self.cfg.push:
                 self.logger.info('Push changes changes')
-                result = yield from git.push()
+                result = await git.push()
                 self.logger.info(result)
 
                 self.logger.info('Creating a new tag %s' % tag_name)
-                tag = yield from repo.create_tag(release)
+                tag = await repo.create_tag(release)
                 self.logger.info('Congratulation, the new release %s is out',
                                  tag)
 

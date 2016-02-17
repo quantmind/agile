@@ -3,7 +3,7 @@
 :Source: https://github.com/quantmind/pulsar-agile
 :Mailing list: `google user group`_
 :Design by: `Quantmind`_ and `Luca Sbardella`_
-:Platforms: Linux, OSX, Windows. Python 3.4 and above
+:Platforms: Linux, OSX, Windows. Python 3.5 and above
 :Keywords: git, github, python, aws, release, documentation
 
 .. |master-build| image:: https://travis-ci.org/quantmind/pulsar-agile.svg?branch=master

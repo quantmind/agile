@@ -6,13 +6,13 @@ class Shell(AgileApp):
     """
     description = 'Run arbitrary commands on the shell'
 
-    def __call__(self, name, config, options):
+    async def __call__(self, name, config, options):
         coms = as_list(config.get('command'), 'missing `command` entry')
         results = []
         for com in coms:
             com = self.render(com)
             self.logger.info('executing shell:%s - %s', name, com)
-            text = yield from execute(com)
+            text = await execute(com)
             if text:
                 self.logger.debug('\n%s', text, extra=dict(color=False))
                 results.append(text)

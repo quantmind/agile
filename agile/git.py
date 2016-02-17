@@ -1,3 +1,7 @@
+from urllib.parse import urlsplit
+
+from pulsar import ImproperlyConfigured
+
 from .github import GithubApi
 from .utils import execute
 
@@ -5,17 +9,21 @@ from .utils import execute
 class Git:
 
     @classmethod
-    def create(cls):
-        remote = yield from execute('git config --get remote.origin.url')
+    async def create(cls):
+        remote = await execute('git config --get remote.origin.url')
         raw = remote.split('@')
         if len(raw) == 2:
             raw = raw[1]
             domain, path = raw.split(':')
-            assert path.endswith('.git')
-            path = path[:-4]
         else:
-            domain = 'github.com'
-            path = ''
+            p = urlsplit(remote)
+            domain = p.netloc
+            path = p.path
+
+        if not path.endswith('.git'):
+            raise ImproperlyConfigured('Remote origin "%s" not supprted' %
+                                       remote)
+        path = path[:-4]
 
         if domain == 'github.com':
             return Github(domain, path)
@@ -33,33 +41,33 @@ class Git:
     def api(self):
         raise NotImplementedError
 
-    def toplevel(self):
+    async def toplevel(self):
         """Top level directory for the repository
         """
-        level = yield from execute('git rev-parse --show-toplevel')
+        level = await execute('git rev-parse --show-toplevel')
         return level
 
-    def branch(self):
-        name = yield from execute('git rev-parse --abbrev-ref HEAD')
+    async def branch(self):
+        name = await execute('git rev-parse --abbrev-ref HEAD')
         return name
 
-    def add(self, *files):
+    async def add(self, *files):
         if files:
-            result = yield from execute('git add %s' % ' '.join(files))
+            result = await execute('git add %s' % ' '.join(files))
             return result
 
-    def commit(self, *files, msg=None):
+    async def commit(self, *files, msg=None):
         if not files:
             files = ('-a',)
         files = list(files)
         files.append('-m')
         files.append(msg or 'commit from pulsar.release manager')
-        result = yield from execute('git commit %s' % ' '.join(files))
+        result = await execute('git commit %s' % ' '.join(files))
         return result
 
-    def push(self):
-        name = yield from self.branch()
-        result = yield from execute('git push origin %s' % name)
+    async def push(self):
+        name = await self.branch()
+        result = await execute('git push origin %s' % name)
         if '[rejected]' in result:
             raise RuntimeError(result)
         return result

@@ -1,4 +1,2 @@
-pulsar-cloud
+git+https://github.com/quantmind/pulsar-cloud.git@master#egg=pulsar-cloud
 sphinx
-flake8
-coverage

@@ -8,7 +8,7 @@ class Sass(AgileApp):
     """
     description = 'Compile scss files using SASS'
 
-    def __call__(self, name, config, options):
+    async def __call__(self, name, config, options):
         files = as_dict(config.get('files'), 'missing `files` entry')
         command = self.render(options.get('command', 'sass'))
         # TODO: we need a more general algorithm for node_modules really!
@@ -19,6 +19,6 @@ class Sass(AgileApp):
         for target, src in files.items():
             cmd = '%s%s %s %s' % (command, args, src, target)
             self.logger.info('executing sass:%s - %s', name, cmd)
-            text = yield from execute(cmd)
+            text = await execute(cmd)
             if text:
                 self.logger.debug(text, extra=dict(color=False))

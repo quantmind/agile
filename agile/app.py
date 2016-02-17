@@ -92,7 +92,7 @@ class AgileManager(pulsar.Application):
         context = self.context
         return Template(text).safe_substitute(context) if context else text
 
-    def agile(self):
+    async def agile(self):
         """ Execute a set of tasks against a configuration file
 
         :return: status code (0 - no errors, 1 - errors, 2 - critical errors)
@@ -101,16 +101,16 @@ class AgileManager(pulsar.Application):
         self.logger = logging.getLogger('agile')
         exit_code = 1
         try:
-            self.git = yield from Git.create()
+            self.git = await Git.create()
             self.gitapi = self.git.api()
-            self.repo_path = yield from self.git.toplevel()
+            self.repo_path = await self.git.toplevel()
             self.context['repo_path'] = self.repo_path
             self.logger.debug('Repository directory %s', self.repo_path)
             self.config = self._load_agile_config()
             if self.cfg.list_tasks:
                 self._list_tasks()
             else:
-                yield from self._execute()
+                await self._execute()
         except AgileExit as exc:
             self.logger.error(str(exc))
         except (ImproperlyConfigured, AgileError) as exc:
@@ -125,17 +125,17 @@ class AgileManager(pulsar.Application):
 
         return exit_code
 
-    def _start_agile(self, worker):
-        exit_code = yield from self.agile()
+    async def _start_agile(self, worker):
+        exit_code = await self.agile()
         if self.gitapi:
             self.gitapi.http.close()
         worker._loop.call_soon(self._exit, exit_code)
 
-    def _execute(self):
+    async def _execute(self):
         tasks = tuple(self.cfg.tasks or self.config['tasks'])
         for task in tasks:
             try:
-                yield from TaskCommand(self, task)()
+                await TaskCommand(self, task)()
             except (ImproperlyConfigured, AgileError) as exc:
                 if self.cfg.force:
                     self.logger.error(exc)
