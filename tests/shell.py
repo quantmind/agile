@@ -8,8 +8,8 @@ class TestShell(tests.AgileTest):
         app = self.app(config_file=self.config)
         self.assertEqual(app.cfg.tasks, [])
 
-    def test_task(self):
+    async def test_task(self):
         app = self.app(tasks=["show"], config_file=self.config)
         self.assertEqual(app.cfg.tasks, ["show"])
-        code = yield from app.agile()
+        code = await app.agile()
         self.assertEqual(code, 0)

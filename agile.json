@@ -5,7 +5,16 @@
     "docs": {
         "aws_bucket": "quantmind-docs"
     },
+    "shell": {
+        "clean": {
+            "command": ["rm -rf build",
+                        "rm -rf dist",
+                        "rm -rf *.log",
+                        "rm -rf *.egg-info"]
+        }
+    },
     "tasks": {
+        "clean": ["shell:clean"],
         "release": ["release"]
     }
 }

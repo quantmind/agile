@@ -1,12 +1,13 @@
 language: python
 
 python:
-  - 3.4.3
   - 3.5.1
 
+install:
+  - pip install -r requirements-dev.txt
+  - pip install -r requirements.txt
+
 script:
-  - git config --get remote.origin
-  - git config --get remote.origin.url
   - flake8
   - python -m runtests --coverage --log-level info
   - if [[ $TRAVIS_PYTHON_VERSION == 3.5.1 ]]; then python -m runtests --coveralls; fi
@@ -17,3 +18,4 @@ notifications:
 branches:
   only:
     - master
+    - py35

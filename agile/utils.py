@@ -27,7 +27,7 @@ class ShellError(AgileError):
 
 class AgileApps(dict):
 
-    def __call__(self, manager, command):
+    async def __call__(self, manager, command):
         bits = command.split(':')
         key = bits[0]
         entry = None
@@ -54,11 +54,11 @@ class AgileApps(dict):
                 raise ImproperlyConfigured('No entry "%s" in %s' %
                                            (command, manager.cfg.config_file))
             cfg = as_dict(cfg, '%s entry not valid' % entry)
-            yield from as_coroutine(app(entry, cfg, options))
+            await app(entry, cfg, options)
         else:
             for entry, cfg in config.items():
                 cfg = as_dict(cfg, '%s entry not valid' % entry)
-                yield from as_coroutine(app(entry, cfg, options))
+                await app(entry, cfg, options)
 
 
 agile_apps = AgileApps()
@@ -100,16 +100,16 @@ class AgileSetting(pulsar.Setting):
     section = "Git Agile"
 
 
-def execute(command):
+async def execute(command):
     """Execute a shell command
     :param args: a given number of command parameters
     :return: the output text
     """
-    proc = yield from asyncio.create_subprocess_shell(
+    proc = await asyncio.create_subprocess_shell(
         command, stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT)
-    yield from proc.wait()
-    msg = yield from proc.stdout.read()
+    await proc.wait()
+    msg = await proc.stdout.read()
     msg = msg.decode('utf-8').strip()
     if proc.returncode:
         raise ShellError(msg, proc.returncode)
@@ -188,7 +188,7 @@ def change_version(manager, version):
         file.write(text)
 
 
-def write_notes(manager, release):
+async def write_notes(manager, release):
     history = os.path.join(manager.releases_path, 'history')
     if not os.path.isdir(history):
         return False
@@ -216,7 +216,7 @@ def write_notes(manager, release):
     manager.logger.info('Added notes to changelog')
 
     if add_file:
-        yield from manager.git.add(filename)
+        await manager.git.add(filename)
 
 
 def as_list(entry, msg=None):
@@ -255,7 +255,7 @@ class TaskCommand:
     def all_tasks(self):
         return self.manager.config['tasks']
 
-    def __call__(self):
+    async def __call__(self):
         self.manager.logger.info('Executing "%s" task - %s' %
                                  (self.task, task_description(self.info)))
         for command in self.commands:
@@ -265,6 +265,6 @@ class TaskCommand:
             if command in self.all_tasks:
                 # the command is another task
                 command = TaskCommand(self.manager, command, self.running)
-                yield from command()
+                await command()
             else:
-                yield from agile_apps(self.manager, command)
+                await agile_apps(self.manager, command)
