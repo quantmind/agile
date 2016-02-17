@@ -34,6 +34,8 @@ class Git:
         raise NotImplementedError
 
     def toplevel(self):
+        """Top level directory for the repository
+        """
         level = yield from execute('git rev-parse --show-toplevel')
         return level
 
