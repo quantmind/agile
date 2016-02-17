@@ -1,5 +1,3 @@
-import logging
-
 from .github import GithubApi
 from .utils import execute
 
@@ -10,11 +8,15 @@ class Git:
     def create(cls):
         remote = yield from execute('git config --get remote.origin.url')
         raw = remote.split('@')
-        assert len(raw), 2
-        raw = raw[1]
-        domain, path = raw.split(':')
-        assert path.endswith('.git')
-        path = path[:-4]
+        if len(raw) == 2:
+            raw = raw[1]
+            domain, path = raw.split(':')
+            assert path.endswith('.git')
+            path = path[:-4]
+        else:
+            domain = 'github.com'
+            path = ''
+
         if domain == 'github.com':
             return Github(domain, path)
         else:
@@ -23,7 +25,6 @@ class Git:
     def __init__(self, domain, path):
         self.domain = domain
         self.repo_path = path
-        self.logger = logging.getLogger('pulsar.release')
 
     def __repr__(self):
         return self.domain
