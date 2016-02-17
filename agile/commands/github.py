@@ -24,6 +24,11 @@ close_issue = set((
 
 
 class Github(AgileApp):
+    """Create Github releases.
+
+    Without the ``--commit`` or ``--push`` flags nothing is committed
+    or pushed to the remote repository
+    """
     description = 'Create a new release in github'
 
     async def __call__(self, name, config, options):
@@ -44,8 +49,10 @@ class Github(AgileApp):
             self.logger.debug('Releasing a python module')
             version = module_attribute(version)
 
-        tag_prefix = opts.get('tag_prefix', '')
+        # repo api object
         repo = gitapi.repo(git.repo_path)
+        #
+        tag_prefix = opts.get('tag_prefix', '')
         current_tag = await repo.validate_tag(version, tag_prefix)
         #
         # Release notes
@@ -62,6 +69,7 @@ class Github(AgileApp):
                 file.write(release['body'])
             self.logger.info('Created new %s file' % note_file)
         #
+        # Commit or Push
         if self.cfg.commit or self.cfg.push:
             #
             # Add release note to the changelog
@@ -166,7 +174,7 @@ class Github(AgileApp):
 
     async def _from_pull_requests(self, repo, created_at):
         #
-        # Collect notes from commits
+        # Collect notes from pull requests
         pulls = await repo.pulls(callback=check_update(created_at),
                                  state='closed', sort='updated',
                                  direction='desc')
@@ -184,7 +192,8 @@ class Github(AgileApp):
 
 
 class check_update:
-
+    """Filter pull requests
+    """
     def __init__(self, since):
         self.since = parser.parse(since)
 

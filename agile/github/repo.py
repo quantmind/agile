@@ -63,9 +63,11 @@ class GitRepo(Component):
             if tag_name >= new_version:
                 what = 'equal to' if tag_name == new_version else 'older than'
                 raise ImproperlyConfigured('Your local version "%s" is %s '
-                                           'the current github version "%s".' %
+                                           'the current github version "%s".\n'
+                                           'Bump the local version to '
+                                           'continue.' %
                                            (str(new_version), what,
-                                            str(current)))
+                                            str(tag_name)))
         return current
 
     async def create_tag(self, release):

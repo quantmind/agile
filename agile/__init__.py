@@ -2,7 +2,7 @@
 """
 import os
 
-VERSION = (0, 2, 0, 'final', 0)
+VERSION = (0, 3, 0, 'final', 0)
 __author__ = 'Luca Sbardella'
 __contact__ = "luca@quantmind.com"
 CLASSIFIERS = ['Development Status :: 3 - Alpha',

@@ -1,11 +1,17 @@
 {
-    "github": {
-        "note_file": "docs/notes.md"
+    "options": {
+        "bucket": "quantmind-docs"
     },
-    "docs": {
-        "aws_bucket": "quantmind-docs"
+    "github": {
+        "pulsar-agile": {
+            "python_module": "agile",
+            "version": "agile.__version__"
+        }
     },
     "shell": {
+        "pypi": {
+            "command": "{{ python }} setup.py sdist"
+        },
         "clean": {
             "command": ["rm -rf build",
                         "rm -rf dist",
@@ -21,8 +27,10 @@
             ]
         },
         "release": {
+            "description": "release a new version to github and create a pypi bundle",
             "command": [
-                "release"
+                "github:pulsar-agile",
+                "shell:pypi"
             ]
         }
     }
