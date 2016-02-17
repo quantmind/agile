@@ -7,7 +7,7 @@ from importlib import import_module
 from collections import Mapping
 
 import pulsar
-from pulsar import ImproperlyConfigured, as_coroutine
+from pulsar import ImproperlyConfigured
 
 
 class AgileError(Exception):
