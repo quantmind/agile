@@ -38,18 +38,18 @@ Available commands to configure are:
 When running tasks, the logging level is by default set to info. For a more
 verbose logging pass ``--log-level agile.debug``.
 
-**Check the registered tasks**
-```
-python agileplay.py -l
-```
-**Release dry run**
-```
-python agileplay.py release
-```
-**Release push**
-```
-python agileplay.py release --push
-```
+**Check tasks available**::
+
+  python agileplay.py -l
+
+**Release dry run**::
+
+  python agileplay.py release
+
+**Release push**::
+
+  python agileplay.py release --push
+
 
 .. _`Luca Sbardella`: http://lucasbardella.com
 .. _`Quantmind`: http://quantmind.com

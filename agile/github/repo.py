@@ -8,6 +8,10 @@ class Component:
     def __init__(self, client):
         self.client = client
 
+    def __repr__(self):
+        return self.api_url
+    __str__ = __repr__
+
     def __getattr__(self, name):
         return getattr(self.client, name)
 
@@ -19,10 +23,14 @@ class GitRepo(Component):
         super().__init__(client)
         self.repo_path = repo_path
 
+    @property
+    def api_url(self):
+        return '%s/repos/%s' % (self.client, self.repo_path)
+
     async def latest_release(self):
         """Get the latest release of this repo
         """
-        url = '%s/repos/%s/releases/latest' % (self.api_url, self.repo_path)
+        url = '%s/releases/latest' % self
         self.logger.info('Check current Github release from %s', url)
         response = await self.http.get(url, auth=self.auth)
         if response.status_code == 200:
@@ -55,8 +63,21 @@ class GitRepo(Component):
     async def create_tag(self, release):
         """Create a new tag
         """
-        url = '%s/repos/%s/releases' % (self.api_url, self.repo_path)
+        url = '%s/releases' % self
         response = await self.http.post(url, data=release, auth=self.auth)
         response.raise_for_status()
         result = response.json()
         return result['tag_name']
+
+    async def label(self, name, color, update=True):
+        """Create or update a label
+        """
+        url = '%s/labels' % self
+        data = dict(name=name, color=color)
+        response = await self.http.post(url, data=data, auth=self.auth)
+        if response.status_code == 201:
+            return True
+        elif update:
+            url = '%s/%s' % (url, name)
+            response = await self.http.patch(url, data=data, auth=self.auth)
+        response.raise_for_status()

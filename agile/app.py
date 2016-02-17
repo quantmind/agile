@@ -2,7 +2,6 @@ import os
 import sys
 import json
 import logging
-from string import Template
 from collections import OrderedDict
 
 import pulsar
@@ -10,7 +9,7 @@ from pulsar import ensure_future, ImproperlyConfigured, validate_list
 
 from .git import Git
 from .utils import (TaskCommand, AgileSetting, AgileError, AgileExit,
-                    task_description)
+                    render, task_description, as_dict, skipfile)
 
 
 exclude = set(pulsar.Config().settings)
@@ -90,7 +89,7 @@ class AgileManager(pulsar.Application):
 
     def render(self, text):
         context = self.context
-        return Template(text).safe_substitute(context) if context else text
+        return render(text, context) if context else text
 
     async def agile(self):
         """ Execute a set of tasks against a configuration file
@@ -106,7 +105,12 @@ class AgileManager(pulsar.Application):
             self.repo_path = await self.git.toplevel()
             self.context['repo_path'] = self.repo_path
             self.logger.debug('Repository directory %s', self.repo_path)
-            self.config = self._load_agile_config()
+            self._load_json()
+            config_file = self.cfg.config_file.split('.')[0]
+            if config_file in self.context:
+                self.config = self.context.pop(config_file)
+            else:
+                raise AgileExit('No %s file' % self.cfg.config_file)
             if self.cfg.list_tasks:
                 self._list_tasks()
             else:
@@ -125,7 +129,7 @@ class AgileManager(pulsar.Application):
 
         return exit_code
 
-    async def _start_agile(self, worker):
+    async def _start_agile(self, worker):   # pragma    nocover
         exit_code = await self.agile()
         if self.gitapi:
             self.gitapi.http.close()
@@ -153,6 +157,8 @@ class AgileManager(pulsar.Application):
         print('==========================================')
         print('')
         for name, task in tasks.items():
+            task = as_dict(task,
+                           'tasks should be a dictionary of dictionaries')
             print('%s: %s' % (name, task_description(task)))
         print('')
         print('==========================================')
@@ -160,12 +166,11 @@ class AgileManager(pulsar.Application):
     def _exit(self, exit_code):
         pulsar.arbiter().stop(exit_code=exit_code)
 
-    def _load_agile_config(self):
-        config_file = os.path.join(self.repo_path, self.cfg.config_file)
-        if not os.path.isfile(config_file):
-            raise ImproperlyConfigured('No %s file' % config_file)
-        # Load release config and notes
-        with open(config_file, 'r') as file:
-            config = file.read()
-        decoder = json.JSONDecoder(object_pairs_hook=OrderedDict)
-        return decoder.decode(config)
+    def _load_json(self):
+        for filename in os.listdir(self.repo_path):
+            if not skipfile(filename) and filename.endswith('.json'):
+                entry = filename.split('.')[0]
+                with open(filename, 'r') as file:
+                    config = file.read()
+                decoder = json.JSONDecoder(object_pairs_hook=OrderedDict)
+                self.context[entry] = decoder.decode(config)

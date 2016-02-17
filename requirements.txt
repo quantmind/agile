@@ -1,2 +1,3 @@
 git+https://github.com/quantmind/pulsar-cloud.git@master#egg=pulsar-cloud
+jinja2
 sphinx

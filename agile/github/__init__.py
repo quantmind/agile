@@ -24,5 +24,9 @@ class GithubApi:
     def api_url(self):
         return 'https://api.github.com'
 
+    def __repr__(self):
+        return self.api_url
+    __str__ = __repr__
+
     def repo(self, repo_path):
         return GitRepo(self, repo_path)

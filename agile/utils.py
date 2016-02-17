@@ -9,6 +9,8 @@ from collections import Mapping
 import pulsar
 from pulsar import ImproperlyConfigured
 
+from jinja2 import Template
+
 
 class AgileError(Exception):
     pass
@@ -124,6 +126,15 @@ def passthrough(manager, version):
     :return: nothing
     """
     pass
+
+
+def skipfile(name):
+    return name.startswith('.') or name.startswith('__')
+
+
+def render(text, context):
+    template = Template(text)
+    return template.render(**context)
 
 
 def semantic_version(tag):

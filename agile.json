@@ -14,7 +14,16 @@
         }
     },
     "tasks": {
-        "clean": ["shell:clean"],
-        "release": ["release"]
+        "clean": {
+            "description": "removed build files and directories",
+            "command": [
+                "shell:clean"
+            ]
+        },
+        "release": {
+            "command": [
+                "release"
+            ]
+        }
     }
 }
