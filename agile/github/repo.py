@@ -1,19 +1,7 @@
 from pulsar import ImproperlyConfigured
 
 from ..utils import semantic_version
-
-
-class Component:
-
-    def __init__(self, client):
-        self.client = client
-
-    def __repr__(self):
-        return self.api_url
-    __str__ = __repr__
-
-    def __getattr__(self, name):
-        return getattr(self.client, name)
+from .commit import Commit, Pull, Issue, Component
 
 
 class GitRepo(Component):
@@ -27,6 +15,21 @@ class GitRepo(Component):
     def api_url(self):
         return '%s/repos/%s' % (self.client, self.repo_path)
 
+    def commit(self, sha):
+        """A githiub commit object
+        """
+        return Commit(self, sha)
+
+    def issue(self, number):
+        """A githiub issue object
+        """
+        return Issue(self, number)
+
+    def pull(self, number):
+        """A githiub commit object
+        """
+        return Pull(self, number)
+
     async def latest_release(self):
         """Get the latest release of this repo
         """
@@ -39,26 +42,31 @@ class GitRepo(Component):
             self.logger.info('Current Github release %s created %s by %s',
                              current, data['created_at'],
                              data['author']['login'])
-            return semantic_version(current)
+            return data
         elif response.status_code == 404:
             self.logger.warning('No Github releases')
         else:
             response.raise_for_status()
 
-    async def validate_tag(self, tag_name):
+    async def validate_tag(self, tag_name, prefix=None):
         """Validate ``tag_name`` with the latest tag from github
+
+        If ``tag_name`` is a valid candidate, return the latest tag from github
         """
         new_version = semantic_version(tag_name)
-        version = list(new_version)
-        version.append('final')
-        version.append(0)
         current = await self.latest_release()
-        if current and current >= new_version:
-            what = 'equal to' if current == new_version else 'older than'
-            raise ImproperlyConfigured('Your local version "%s" is %s '
-                                       'the current github version "%s".' %
-                                       (str(new_version), what, str(current)))
-        return tuple(version)
+        if current:
+            tag_name = current['tag_name']
+            if prefix:
+                tag_name = tag_name[len(prefix):]
+            tag_name = semantic_version(tag_name)
+            if tag_name >= new_version:
+                what = 'equal to' if tag_name == new_version else 'older than'
+                raise ImproperlyConfigured('Your local version "%s" is %s '
+                                           'the current github version "%s".' %
+                                           (str(new_version), what,
+                                            str(current)))
+        return current
 
     async def create_tag(self, release):
         """Create a new tag
@@ -81,3 +89,13 @@ class GitRepo(Component):
             url = '%s/%s' % (url, name)
             response = await self.http.patch(url, data=data, auth=self.auth)
         response.raise_for_status()
+
+    def commits(self, **data):
+        """Get a list of commits
+        """
+        return self.get_list('%s/commits' % self, **data)
+
+    def pulls(self, **data):
+        """Get a list of pull requests
+        """
+        return self.get_list('%s/pulls' % self, **data)

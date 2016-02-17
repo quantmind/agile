@@ -57,6 +57,14 @@ class Commit(AgileSetting):
     desc = "Commit changes to git"
 
 
+class Push(AgileSetting):
+    name = "push"
+    flags = ['--push']
+    action = "store_true"
+    default = False
+    desc = "Push changes to origin"
+
+
 class AgileManager(pulsar.Application):
     name = 'agile'
     cfg = pulsar.Config(apps=['agile'],

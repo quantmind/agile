@@ -3,7 +3,7 @@ import glob
 
 from cloud import aws
 
-from ..utils import AgileApp, as_list, as_dict, AgileError
+from ..utils import AgileApp, as_dict, AgileError
 
 
 class S3(AgileApp):

@@ -145,8 +145,8 @@ def semantic_version(tag):
         assert len(version) == 3
         return tuple(version)
     except Exception:
-        raise ImproperlyConfigured('Could not parse tag, please use '
-                                   'MAJOR.MINOR.PATCH')
+        raise ImproperlyConfigured('Could not parse "%s", please use '
+                                   'MAJOR.MINOR.PATCH' % tag)
 
 
 def get_auth():

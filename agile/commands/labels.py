@@ -24,5 +24,3 @@ class Labels(AgileApp):
             self.logger.debug('Created label "%s" @ %s', name, repo)
         else:
             self.logger.debug('Updated label "%s" @ %s', name, repo)
-
-
