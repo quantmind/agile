@@ -55,7 +55,9 @@ Testing
 -----------
 
 To run unit tests, create a ``config.py`` file alongside this file and add
-the following two entries::
+the following two entries:
+
+.. code:: python
 
     github_token = "generate one from https://github.com/settings/tokens"
     test_repo = "<username>/<reponame>"
