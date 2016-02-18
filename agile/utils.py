@@ -1,8 +1,9 @@
 import os
+import json
 import asyncio
 import logging
 import configparser
-from collections import Mapping
+from collections import Mapping, OrderedDict
 
 import pulsar
 from pulsar import ImproperlyConfigured
@@ -235,3 +236,10 @@ class TaskCommand:
                 await command()
             else:
                 await agile_apps(self.manager, command)
+
+
+def load_json(filename):
+    with open(filename, 'r') as file:
+        text = file.read()
+    decoder = json.JSONDecoder(object_pairs_hook=OrderedDict)
+    return decoder.decode(text)

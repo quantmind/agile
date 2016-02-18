@@ -59,8 +59,11 @@ the following two entries:
 
 .. code:: python
 
-    github_token = "generate one from https://github.com/settings/tokens"
-    test_repo = "<username>/<reponame>"
+    import os
+
+    os.environ['GITHUB_USERNAME'] = "<username for token>"
+    os.environ['GITHUB_TOKEN'] = "<generate one from https://github.com/settings/tokens>"
+    os.environ['GITHUB_TEST_REPO'] = "<username>/<reponame>"
 
 
 .. _`Luca Sbardella`: http://lucasbardella.com

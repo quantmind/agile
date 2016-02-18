@@ -1,15 +1,14 @@
 import os
 import sys
-import json
 import logging
-from collections import OrderedDict
 
 import pulsar
 from pulsar import ensure_future, ImproperlyConfigured, validate_list
 
 from .git import Git
 from .utils import (TaskCommand, AgileSetting, AgileError, AgileExit,
-                    render, task_description, as_dict, skipfile)
+                    render, task_description, as_dict, skipfile,
+                    load_json)
 
 
 exclude = set(pulsar.Config().settings)
@@ -111,12 +110,7 @@ class AgileManager(pulsar.Application):
         self.repo_path = await self.git.toplevel()
         self.context['repo_path'] = self.repo_path
         self.logger.debug('Repository directory %s', self.repo_path)
-        self._load_json()
-        config_file = self.cfg.config_file.split('.')[0]
-        if config_file in self.context:
-            self.config = self.context.pop(config_file)
-        else:
-            raise AgileExit('No %s file' % self.cfg.config_file)
+        self.config = self._load_json()
         if self.cfg.list_tasks:
             self._list_tasks()
         else:
@@ -176,7 +170,9 @@ class AgileManager(pulsar.Application):
         for filename in os.listdir(self.repo_path):
             if not skipfile(filename) and filename.endswith('.json'):
                 entry = filename.split('.')[0]
-                with open(filename, 'r') as file:
-                    config = file.read()
-                decoder = json.JSONDecoder(object_pairs_hook=OrderedDict)
-                self.context[entry] = decoder.decode(config)
+                self.context[entry] = load_json(filename)
+        config_file = self.cfg.config_file
+        entry = config_file.split('.')[0]
+        if entry not in self.context:
+            self.context[entry] = load_json(config_file)
+        return self.context.pop(entry)
