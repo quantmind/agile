@@ -2,8 +2,6 @@ import os
 import asyncio
 import logging
 import configparser
-from datetime import date
-from importlib import import_module
 from collections import Mapping
 
 import pulsar
@@ -173,61 +171,6 @@ def get_auth():
         return user['username'], user['token']
     else:
         raise ImproperlyConfigured('No user section in %s' % config)
-
-
-def change_version(manager, version):
-    version_file = manager.cfg.version_file
-    if not version_file:
-        mod = import_module(manager.cfg.app_module)
-        version_file = mod.__file__
-        bits = version_file.split('.')
-        bits[-1] = 'py'
-        version_file = '.'.join(bits)
-
-    def _generate():
-        with open(version_file, 'r') as file:
-            text = file.read()
-
-        for line in text.split('\n'):
-            if line.startswith('VERSION = '):
-                yield 'VERSION = %s' % str(version)
-            else:
-                yield line
-
-    text = '\n'.join(_generate())
-    with open(version_file, 'w') as file:
-        file.write(text)
-
-
-async def write_notes(manager, release):
-    history = os.path.join(manager.releases_path, 'history')
-    if not os.path.isdir(history):
-        return False
-    dt = date.today()
-    dt = dt.strftime('%Y-%b-%d')
-    vv = release['tag_name']
-    hist = '.'.join(vv.split('.')[:-1])
-    filename = os.path.join(history, '%s.md' % hist)
-    body = ['# Ver. %s - %s' % (release['tag_name'], dt),
-            '',
-            release['body']]
-
-    add_file = True
-
-    if os.path.isfile(filename):
-        # We need to add the file
-        add_file = False
-        with open(filename, 'r') as file:
-            body.append('')
-            body.append(file.read())
-
-    with open(filename, 'w') as file:
-        file.write('\n'.join(body))
-
-    manager.logger.info('Added notes to changelog')
-
-    if add_file:
-        await manager.git.add(filename)
 
 
 def as_list(entry, msg=None):

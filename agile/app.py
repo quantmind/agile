@@ -38,7 +38,9 @@ class ListTasks(AgileSetting):
     flags = ['-l', '--list-tasks']
     action = "store_true"
     default = False
-    desc = "List of available tasks"
+    desc = """\
+        List of available tasks
+        """
 
 
 class Force(AgileSetting):
@@ -93,7 +95,7 @@ class AgileManager(pulsar.Application):
 
     def worker_start(self, worker, exc=None):
         if not exc:
-            ensure_future(self._start_agile(worker))
+            ensure_future(self._agile(worker))
 
     def render(self, text):
         context = self.context
@@ -101,28 +103,29 @@ class AgileManager(pulsar.Application):
 
     async def agile(self):
         """ Execute a set of tasks against a configuration file
-
-        :return: status code (0 - no errors, 1 - errors, 2 - critical errors)
         """
-        self.context = {'python': sys.executable}
         self.logger = logging.getLogger('agile')
+        self.context = {'python': sys.executable}
+        self.git = await Git.create()
+        self.gitapi = self.git.api()
+        self.repo_path = await self.git.toplevel()
+        self.context['repo_path'] = self.repo_path
+        self.logger.debug('Repository directory %s', self.repo_path)
+        self._load_json()
+        config_file = self.cfg.config_file.split('.')[0]
+        if config_file in self.context:
+            self.config = self.context.pop(config_file)
+        else:
+            raise AgileExit('No %s file' % self.cfg.config_file)
+        if self.cfg.list_tasks:
+            self._list_tasks()
+        else:
+            await self._execute()
+
+    async def _agile(self, worker):   # pragma    nocover
         exit_code = 1
         try:
-            self.git = await Git.create()
-            self.gitapi = self.git.api()
-            self.repo_path = await self.git.toplevel()
-            self.context['repo_path'] = self.repo_path
-            self.logger.debug('Repository directory %s', self.repo_path)
-            self._load_json()
-            config_file = self.cfg.config_file.split('.')[0]
-            if config_file in self.context:
-                self.config = self.context.pop(config_file)
-            else:
-                raise AgileExit('No %s file' % self.cfg.config_file)
-            if self.cfg.list_tasks:
-                self._list_tasks()
-            else:
-                await self._execute()
+            await self.agile()
         except AgileExit as exc:
             self.logger.error(str(exc))
         except (ImproperlyConfigured, AgileError) as exc:
@@ -134,13 +137,8 @@ class AgileManager(pulsar.Application):
             exit_code = 2
         else:
             exit_code = 0
-
-        return exit_code
-
-    async def _start_agile(self, worker):   # pragma    nocover
-        exit_code = await self.agile()
         if self.gitapi:
-            self.gitapi.http.close()
+            await self.gitapi.http.close()
         worker._loop.call_soon(self._exit, exit_code)
 
     async def _execute(self):

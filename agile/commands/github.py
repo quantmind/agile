@@ -60,14 +60,17 @@ class Github(AgileApp):
         if os.path.isfile(note_file):
             with open(note_file, 'r') as file:
                 release['body'] = file.read().strip()
+            release['tag_name'] = version
+            location = opts.get('release-notes')
+            if location:
+                await self.write_notes(location, release)
         else:
             self.logger.info('Create release notes from commits &'
-                             'pull requests')
-            release['body'] = await self.release_notes(repo, version,
-                                                       current_tag)
+                             ' pull requests')
+            release['body'] = await self.get_notes(repo, version, current_tag)
             with open(note_file, 'w') as file:
                 file.write(release['body'])
-            self.logger.info('Created new %s file' % note_file)
+            return self.logger.info('Created new %s file' % note_file)
         #
         # Commit or Push
         if self.cfg.commit or self.cfg.push:
@@ -87,13 +90,9 @@ class Github(AgileApp):
                 self.logger.info('Congratulation, the new release %s is out',
                                  tag)
 
-        return True
-
-    async def release_notes(self, repo, version, current_tag):
+    async def get_notes(self, repo, version, current_tag):
         """Fetch release notes from github
         """
-        dt = date.today()
-        dt = dt.strftime('%Y-%b-%d')
         created_at = current_tag['created_at']
         notes = []
         notes.extend(await self._from_commits(repo, created_at))
@@ -105,10 +104,10 @@ class Github(AgileApp):
                 sections[section] = []
             sections[section].append(body)
 
-        body = ['# Ver. %s - %s' % (version, dt), '']
+        body = []
         for title in sorted(sections):
             if title:
-                body.append('## %s' % capfirst(title))
+                body.append('### %s' % capfirst(title))
             for entry in sections[title]:
                 if not entry.startswith('* '):
                     entry = '* %s' % entry
@@ -153,6 +152,46 @@ class Github(AgileApp):
                 body = capfirst(body)
                 body = '%s [%s](%s)' % (body, eid, entry['html_url'])
                 notes.append((dte, section.lower(), body))
+
+    async def write_notes(self, location, release):
+        dt = date.today().strftime('%Y-%b-%d')
+        version = release['tag_name']
+        title = '## Ver. %s' % version
+        body = ['%s - %s' % (title, dt), '']
+        body.extend(release['body'].strip().splitlines())
+        bits = version.split('.')
+        bits[2] = 'md'
+        filename = os.path.join(location, '.'.join(bits))
+        if not os.path.isdir(location):
+            os.makedirs(location)
+        add_file = True
+        if os.path.isfile(filename):
+            # We need to add the file
+            add_file = False
+            with open(filename, 'r') as file:
+                lines = file.read().strip().splitlines()
+            lines = self._remove_notes(lines, title)
+            body.extend(('', ''))
+            body.extend(lines)
+
+        with open(filename, 'w') as file:
+            file.write('\n'.join(body))
+
+        self.logger.info('Added release notes to %s', filename)
+
+        if add_file:
+            self.logger.info('Add %s to repository', filename)
+            await self.git.add(filename)
+
+    def _remove_notes(self, lines, title):
+        # We need to remove the previous notes
+        for line in lines:
+            if line.startswith(title):
+                remove = True
+            elif line.startswith('## '):
+                remove = False
+            if not remove:
+                yield line
 
     async def _from_commits(self, repo, created_at):
         #
