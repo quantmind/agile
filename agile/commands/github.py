@@ -1,14 +1,15 @@
-'''Pulsar app for creating releases. Used by pulsar.
-'''
+"""Agile app for managing releases
+"""
 import os
 from datetime import date
+import glob
 
 from dateutil import parser
 
 from pulsar.utils.importer import module_attribute
 from pulsar.utils.html import capfirst
 
-from ..utils import AgileApp, AgileError
+from ..utils import AgileApp, AgileError, as_dict, as_list
 
 close_issue = set((
     'close',
@@ -30,6 +31,7 @@ class Github(AgileApp):
     or pushed to the remote repository
     """
     description = 'Create a new release in github'
+    actions = frozenset(('shell', 'upload'))
 
     async def __call__(self, name, config, options):
         git = self.git
@@ -37,60 +39,83 @@ class Github(AgileApp):
         release = {}
         opts = dict(options)
         opts.update(config)
-
-        # Validate new tag and write the new version
+        # repo api object
+        repo = gitapi.repo(git.repo_path)
+        #
+        # Get the version to release and validate
         version = opts.get('version')
         if not version:
             raise AgileError('"version" not specified in github.%s dictionary'
                              % name)
-
         version = self.render(version)
         if opts.get('python_module'):
             self.logger.debug('Releasing a python module')
             version = module_attribute(version)
-
-        # repo api object
-        repo = gitapi.repo(git.repo_path)
-        #
         tag_prefix = opts.get('tag_prefix', '')
         current_tag = await repo.validate_tag(version, tag_prefix)
+        release['tag_name'] = version
         #
         # Release notes
-        note_file = os.path.join(self.repo_path, "release-notes.md")
-        if os.path.isfile(note_file):
-            with open(note_file, 'r') as file:
-                release['body'] = file.read().strip()
-            release['tag_name'] = version
-            location = opts.get('release-notes')
-            if location:
+        location = opts.get('release_notes')
+        if location:
+            note_file = os.path.join(self.repo_path, "release-notes.md")
+            if os.path.isfile(note_file):
+                with open(note_file, 'r') as file:
+                    release['body'] = file.read().strip()
                 await self.write_notes(location, release)
-        else:
-            self.logger.info('Create release notes from commits &'
-                             ' pull requests')
-            release['body'] = await self.get_notes(repo, version, current_tag)
-            with open(note_file, 'w') as file:
-                file.write(release['body'])
-            return self.logger.info('Created new %s file' % note_file)
+            else:
+                self.logger.info('Create release notes from commits &'
+                                 ' pull requests')
+                release['body'] = await self.get_notes(repo, current_tag)
+                with open(note_file, 'w') as file:
+                    file.write(release['body'])
+                # Extit so that the release manager can edit the file
+                # before releasing
+                return self.logger.info('Created new %s file' % note_file)
         #
         # Commit or Push
         if self.cfg.commit or self.cfg.push:
             #
-            # Add release note to the changelog
-            await self.cfg.write_notes(self.app, release)
+            # Create the tar or zip file
+            dist = as_dict(opts.get('dist', {}),
+                           "dist entry should be a dictionary")
+            for name, value in dist.items():
+                if name not in self.actions:
+                    raise AgileError('No such action "%s"' % name)
+            #
+            version = '%s%s' % (tag_prefix, version)
+            release['tag_name'] = version
             self.logger.info('Commit changes')
             result = await git.commit(msg='Release %s' % version)
-            self.logger.info(result)
+            self.logger.debug(result, extra=dict(color=False))
+            #
+            # Push to github and create tag
             if self.cfg.push:
-                self.logger.info('Push changes changes')
+                self.logger.info('Push changes')
                 result = await git.push()
-                self.logger.info(result)
-
-                self.logger.info('Creating a new tag %s' % version)
-                tag = await repo.create_tag(release)
+                self.logger.debug(result, extra=dict(color=False))
+                self.logger.info('Creating a new tag %s', version)
+                release = await repo.create_release(release)
                 self.logger.info('Congratulation, the new release %s is out',
-                                 tag)
+                                 release['tag_name'])
+                #
+                # Perform post-release actions
+                for action, value in dist.items():
+                    key = '%s:%s:%s' % (self.command, name, action)
+                    await getattr(self, action)(key, value, release=release)
 
-    async def get_notes(self, repo, version, current_tag):
+    async def upload(self, name, src, release=None, **kw):
+        if release:
+            tag = release['tag_name']
+            rel = self.gitapi.repo(self.git.repo_path).release(release['id'])
+            for src in as_list(src):
+                src = self.render(src)
+                for filename in glob.glob(src):
+                    self.logger.info('Uploading %s to release %s',
+                                     filename, tag)
+                    await rel.upload(filename)
+
+    async def get_notes(self, repo, current_tag):
         """Fetch release notes from github
         """
         created_at = current_tag['created_at']

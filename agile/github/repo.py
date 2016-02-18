@@ -1,7 +1,7 @@
 from pulsar import ImproperlyConfigured
 
 from ..utils import semantic_version
-from .commit import Commit, Pull, Issue, Component
+from .components import Commit, Pull, Issue, Release, Component
 
 
 class GitRepo(Component):
@@ -16,19 +16,24 @@ class GitRepo(Component):
         return '%s/repos/%s' % (self.client, self.repo_path)
 
     def commit(self, sha):
-        """A githiub commit object
+        """A github commit object
         """
         return Commit(self, sha)
 
     def issue(self, number):
-        """A githiub issue object
+        """A github issue object
         """
         return Issue(self, number)
 
     def pull(self, number):
-        """A githiub commit object
+        """A github pull request object
         """
         return Pull(self, number)
+
+    def release(self, rid):
+        """A github release object
+        """
+        return Release(self, rid)
 
     async def latest_release(self):
         """Get the latest release of this repo
@@ -70,14 +75,13 @@ class GitRepo(Component):
                                             str(tag_name)))
         return current
 
-    async def create_tag(self, release):
-        """Create a new tag
+    async def create_release(self, release):
+        """Create a new release
         """
         url = '%s/releases' % self
         response = await self.http.post(url, data=release, auth=self.auth)
         response.raise_for_status()
-        result = response.json()
-        return result['tag_name']
+        return response.json()
 
     async def label(self, name, color, update=True):
         """Create or update a label

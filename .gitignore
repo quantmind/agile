@@ -9,6 +9,7 @@
 .coverage
 htmlcov
 release-notes.md
+config.py
 
 #python
 *.pyc

@@ -24,6 +24,10 @@ class GithubApi:
     def api_url(self):
         return 'https://api.github.com'
 
+    @property
+    def uploads_url(self):
+        return 'https://uploads.github.com'
+
     def __repr__(self):
         return self.api_url
     __str__ = __repr__

@@ -1,3 +1,11 @@
+import os
+import mimetypes
+from urllib.parse import urlsplit
+
+from pulsar.utils.httpurl import iri_to_uri
+
+
+ONEMB = 2**20
 
 
 class Component:
@@ -60,3 +68,38 @@ class Issue(Commit):
 
 class Pull(Commit):
     type = 'pulls'
+
+
+class Release(Commit):
+    type = 'releases'
+
+    async def upload(self, filename, content_type=None):
+        """Upload a file to a release
+
+        :param filename: filename to upload
+        :param content_type: optional content type
+        :return: json object from github
+        """
+        name = os.path.basename(filename)
+        if not content_type:
+            content_type, _ = mimetypes.guess_type(name)
+        if not content_type:
+            raise ValueError('content_type not known')
+        inputs = {
+            'name': name,
+            'Content-Type': content_type
+        }
+        url = '%s/%s' % (self.uploads_url, urlsplit(self.api_url).path)
+        url = iri_to_uri(url, **inputs)
+        response = await self.http.post(url, data=stream_upload(filename))
+        response.raise_for_status()
+        return response.json()
+
+
+def stream_upload(filename):
+    with open(stream_upload, 'rb') as file:
+        while True:
+            chunk = file.read(ONEMB)
+            if not chunk:
+                break
+            yield chunk

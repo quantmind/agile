@@ -51,6 +51,16 @@ verbose logging pass ``--log-level agile.debug``.
   python agileplay.py release --push
 
 
+Testing
+-----------
+
+To run unit tests, create a ``config.py`` file alongside this file and add
+the following two entries::
+
+    github_token = "generate one from https://github.com/settings/tokens"
+    test_repo = "<username>/<reponame>"
+
+
 .. _`Luca Sbardella`: http://lucasbardella.com
 .. _`Quantmind`: http://quantmind.com
 .. _`google user group`: https://groups.google.com/forum/?fromgroups#!forum/python-pulsar

@@ -1,4 +1,4 @@
-from ..utils import AgileApp, as_list, execute
+from ..utils import AgileApp
 
 
 class Shell(AgileApp):
@@ -7,14 +7,6 @@ class Shell(AgileApp):
     description = 'Run arbitrary commands on the shell'
 
     async def __call__(self, name, config, options):
-        coms = as_list(config.get('command'), 'missing `command` entry')
-        results = []
-        for com in coms:
-            com = self.render(com)
-            self.logger.info('executing shell:%s - %s', name, com)
-            text = await execute(com)
-            if text:
-                self.logger.debug('\n%s', text, extra=dict(color=False))
-                results.append(text)
+        results = await self.shell(name, config.get('command'))
         if results:
             self.context[name] = results if len(results) > 1 else results[0]

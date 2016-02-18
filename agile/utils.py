@@ -93,6 +93,19 @@ class AgileApp(metaclass=AgileMeta):
     def __getattr__(self, name):
         return getattr(self.app, name)
 
+    async def shell(self, name, coms, **kw):
+        """Execute a list of shell commands
+        """
+        results = []
+        for com in as_list(coms, 'shell commands should be a list'):
+            com = self.render(com)
+            self.logger.info('executing shell:%s - %s', name, com)
+            text = await execute(com)
+            if text:
+                self.logger.debug('\n%s', text, extra=dict(color=False))
+                results.append(text)
+        return results
+
 
 class AgileSetting(pulsar.Setting):
     virtual = True
