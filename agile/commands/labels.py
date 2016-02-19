@@ -1,17 +1,17 @@
 import asyncio
 
-from ..utils import AgileApp, as_list, as_dict
+from .. import utils
 
 
-class Labels(AgileApp):
+class Labels(utils.AgileApp):
     description = 'Set labels in github issues'
 
     async def __call__(self, name, config, options):
-        repositories = as_list(config.get('repositories'),
-                               'No repositories given, must be a list')
-        labels = as_dict(config.get('labels'),
-                         'No labels given, must be a dictionary mapping '
-                         'names to colors')
+        repositories = utils.as_list(config.get('repositories'),
+                                     'No repositories given, must be a list')
+        labels = utils.as_dict(config.get('labels'),
+                               'No labels given, must be a dictionary mapping '
+                               'names to colors')
         requests = []
         for repo in repositories:
             for name, color in labels.items():

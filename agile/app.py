@@ -6,16 +6,14 @@ import pulsar
 from pulsar import ensure_future, ImproperlyConfigured, validate_list
 
 from .git import Git
-from .utils import (TaskCommand, AgileSetting, AgileError, AgileExit,
-                    render, task_description, as_dict, skipfile,
-                    load_json)
+from . import utils
 
 
 exclude = set(pulsar.Config().settings)
 exclude.difference_update(('config', 'loglevel', 'loghandlers', 'debug'))
 
 
-class Tasks(AgileSetting):
+class Tasks(utils.AgileSetting):
     name = 'tasks'
     nargs = '*'
     validator = validate_list
@@ -23,7 +21,7 @@ class Tasks(AgileSetting):
     desc = "tasks to run - For the list of tasks pass -l or --list-tasks"
 
 
-class ConfigFile(AgileSetting):
+class ConfigFile(utils.AgileSetting):
     name = "config_file"
     flags = ["--config-file"]
     default = "agile.json"
@@ -32,7 +30,7 @@ class ConfigFile(AgileSetting):
         """
 
 
-class ListTasks(AgileSetting):
+class ListTasks(utils.AgileSetting):
     name = "list_tasks"
     flags = ['-l', '--list-tasks']
     action = "store_true"
@@ -42,7 +40,7 @@ class ListTasks(AgileSetting):
         """
 
 
-class Force(AgileSetting):
+class Force(utils.AgileSetting):
     name = "force"
     flags = ['--force']
     action = "store_true"
@@ -50,7 +48,7 @@ class Force(AgileSetting):
     desc = "Force execution when errors occur"
 
 
-class Commit(AgileSetting):
+class Commit(utils.AgileSetting):
     name = "commit"
     flags = ['--commit']
     action = "store_true"
@@ -58,7 +56,7 @@ class Commit(AgileSetting):
     desc = "Commit changes to git"
 
 
-class Push(AgileSetting):
+class Push(utils.AgileSetting):
     name = "push"
     flags = ['--push']
     action = "store_true"
@@ -98,7 +96,7 @@ class AgileManager(pulsar.Application):
 
     def render(self, text):
         context = self.context
-        return render(text, context) if context else text
+        return utils.render(text, context) if context else text
 
     async def agile(self):
         """ Execute a set of tasks against a configuration file
@@ -106,7 +104,7 @@ class AgileManager(pulsar.Application):
         self.logger = logging.getLogger('agile')
         self.context = {'python': sys.executable}
         self.git = await Git.create()
-        self.gitapi = self.git.api()
+        self.gitapi = self.cfg.get('gitapi', self.git.api())
         self.repo_path = await self.git.toplevel()
         self.context['repo_path'] = self.repo_path
         self.logger.debug('Repository directory %s', self.repo_path)
@@ -120,9 +118,9 @@ class AgileManager(pulsar.Application):
         exit_code = 1
         try:
             await self.agile()
-        except AgileExit as exc:
+        except utils.AgileExit as exc:
             self.logger.error(str(exc))
-        except (ImproperlyConfigured, AgileError) as exc:
+        except (ImproperlyConfigured, utils.AgileError) as exc:
             self.logger.error(str(exc))
             self.logger.info('Execution stopped. '
                              'Pass --force to force executions on errors')
@@ -139,8 +137,8 @@ class AgileManager(pulsar.Application):
         tasks = tuple(self.cfg.tasks or self.config['tasks'])
         for task in tasks:
             try:
-                await TaskCommand(self, task)()
-            except (ImproperlyConfigured, AgileError) as exc:
+                await utils.TaskCommand(self, task)()
+            except (ImproperlyConfigured, utils.AgileError) as exc:
                 if self.cfg.force:
                     self.logger.error(exc)
                 else:
@@ -149,17 +147,17 @@ class AgileManager(pulsar.Application):
     def _list_tasks(self):
         tasks = self.config.get('tasks')
         if not tasks:
-            raise AgileExit('No "tasks" entry in your %s file' %
-                            self.cfg.config_file)
+            raise utils.AgileExit('No "tasks" entry in your %s file' %
+                                  self.cfg.config_file)
         print('')
         print('==========================================')
         print('There are %d tasks available' % len(tasks))
         print('==========================================')
         print('')
         for name, task in tasks.items():
-            task = as_dict(task,
-                           'tasks should be a dictionary of dictionaries')
-            print('%s: %s' % (name, task_description(task)))
+            task = utils.as_dict(
+                task, 'tasks should be a dictionary of dictionaries')
+            print('%s: %s' % (name, utils.task_description(task)))
         print('')
         print('==========================================')
 
@@ -168,11 +166,11 @@ class AgileManager(pulsar.Application):
 
     def _load_json(self):
         for filename in os.listdir(self.repo_path):
-            if not skipfile(filename) and filename.endswith('.json'):
-                entry = filename.split('.')[0]
-                self.context[entry] = load_json(filename)
+            if not utils.skipfile(filename) and filename.endswith('.json'):
+                entry = utils.config_entry(filename)
+                self.context[entry] = utils.load_json(filename)
         config_file = self.cfg.config_file
-        entry = config_file.split('.')[0]
+        entry = utils.config_entry(config_file)
         if entry not in self.context:
-            self.context[entry] = load_json(config_file)
-        return self.context.pop(entry)
+            self.context[entry] = utils.load_json(config_file)
+        return self.context.get(entry)

@@ -9,7 +9,7 @@ from dateutil import parser
 from pulsar.utils.importer import module_attribute
 from pulsar.utils.html import capfirst
 
-from ..utils import AgileApp, AgileError, as_dict, as_list
+from .. import utils
 
 close_issue = set((
     'close',
@@ -24,7 +24,7 @@ close_issue = set((
 ))
 
 
-class Github(AgileApp):
+class Github(utils.AgileApp):
     """Create Github releases.
 
     Without the ``--commit`` or ``--push`` flags nothing is committed
@@ -45,8 +45,8 @@ class Github(AgileApp):
         # Get the version to release and validate
         version = opts.get('version')
         if not version:
-            raise AgileError('"version" not specified in github.%s dictionary'
-                             % name)
+            raise utils.AgileError('"version" not specified in github.%s '
+                                   'dictionary' % name)
         version = self.render(version)
         if opts.get('python_module'):
             self.logger.debug('Releasing a python module')
@@ -77,11 +77,11 @@ class Github(AgileApp):
         if self.cfg.commit or self.cfg.push:
             #
             # Create the tar or zip file
-            dist = as_dict(opts.get('dist', {}),
-                           "dist entry should be a dictionary")
+            dist = utils.as_dict(opts.get('dist', {}),
+                                 "dist entry should be a dictionary")
             for name, value in dist.items():
                 if name not in self.actions:
-                    raise AgileError('No such action "%s"' % name)
+                    raise utils.AgileError('No such action "%s"' % name)
             #
             version = '%s%s' % (tag_prefix, version)
             release['tag_name'] = version
@@ -108,7 +108,7 @@ class Github(AgileApp):
         if release:
             tag = release['tag_name']
             rel = self.gitapi.repo(self.git.repo_path).release(release['id'])
-            for src in as_list(src):
+            for src in utils.as_list(src):
                 src = self.render(src)
                 for filename in glob.glob(src):
                     self.logger.info('Uploading %s to release %s',

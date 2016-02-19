@@ -1,6 +1,6 @@
 from pulsar import ImproperlyConfigured
 
-from ..utils import semantic_version
+from .. import utils
 from .components import Commit, Pull, Issue, Release, Component
 
 
@@ -61,13 +61,13 @@ class GitRepo(Component):
 
         If ``tag_name`` is a valid candidate, return the latest tag from github
         """
-        new_version = semantic_version(tag_name)
+        new_version = utils.semantic_version(tag_name)
         current = await self.latest_release()
         if current:
             tag_name = current['tag_name']
             if prefix:
                 tag_name = tag_name[len(prefix):]
-            tag_name = semantic_version(tag_name)
+            tag_name = utils.semantic_version(tag_name)
             if tag_name >= new_version:
                 what = 'equal to' if tag_name == new_version else 'older than'
                 raise ImproperlyConfigured('Your local version "%s" is %s '

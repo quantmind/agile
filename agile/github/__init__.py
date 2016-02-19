@@ -3,7 +3,7 @@ import logging
 from pulsar import ImproperlyConfigured
 from pulsar.apps.http import HttpClient
 
-from ..utils import get_auth
+from .. import utils
 from .repo import GitRepo
 
 
@@ -15,7 +15,7 @@ class GithubApi:
         self.logger = logging.getLogger('agile.github')
         self.http = http
         try:
-            self.auth = auth or get_auth()
+            self.auth = auth or utils.get_auth()
         except ImproperlyConfigured as exc:
             self.logger.warning(str(exc))
             self.auth = None

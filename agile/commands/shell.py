@@ -1,7 +1,7 @@
-from ..utils import AgileApp
+from .. import utils
 
 
-class Shell(AgileApp):
+class Shell(utils.AgileApp):
     """Run shell commands
     """
     description = 'Run arbitrary commands on the shell'

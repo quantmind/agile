@@ -3,21 +3,21 @@ import glob
 
 from cloud import aws
 
-from ..utils import AgileApp, as_dict, AgileError
+from .. import utils
 
 
-class S3(AgileApp):
+class S3(utils.AgileApp):
     description = 'Upload files to S3'
 
     async def __call__(self, name, config, options):
-        files = as_dict(config.get('files'),
-                        'No files given, must be a dictionary')
+        files = utils.as_dict(config.get('files'),
+                              'No files given, must be a dictionary')
         opts = dict(options)
         opts.update(config.get('options', {}))
         bucket = opts.pop('bucket', None)
         if not bucket:
-            raise AgileError('No bucket entry found.'
-                             'Specify it in the s3.options dictionary')
+            raise utils.AgileError('No bucket entry found.'
+                                   'Specify it in the s3.options dictionary')
         s3 = aws.AsyncioBotocore('s3', http_session=self.gitapi.http,
                                  **opts)
         requests = []
@@ -25,7 +25,7 @@ class S3(AgileApp):
             src = self.render(src)
             target = self.render(target)
             if not target.endswith('/'):
-                raise AgileError('s3 targets should end with a slash /')
+                raise utils.AgileError('s3 targets should end with a slash /')
             for filename in glob.glob(src):
                 requests.append(self._upload(s3, bucket, filename, target))
         await asyncio.gather(*requests)

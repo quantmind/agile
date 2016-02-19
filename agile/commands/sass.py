@@ -1,7 +1,7 @@
-from ..utils import AgileApp, as_dict, execute
+from .. import utils
 
 
-class Sass(AgileApp):
+class Sass(utils.AgileApp):
     """Run SASS command
 
     To create css bundles
@@ -9,7 +9,7 @@ class Sass(AgileApp):
     description = 'Compile scss files using SASS'
 
     async def __call__(self, name, config, options):
-        files = as_dict(config.get('files'), 'missing `files` entry')
+        files = utils.as_dict(config.get('files'), 'missing `files` entry')
         command = self.render(options.get('command', 'sass'))
         # TODO: we need a more general algorithm for node_modules really!
         node_modules = 'node_modules'
@@ -19,6 +19,6 @@ class Sass(AgileApp):
         for target, src in files.items():
             cmd = '%s%s %s %s' % (command, args, src, target)
             self.logger.info('executing sass:%s - %s', name, cmd)
-            text = await execute(cmd)
+            text = await utils.execute(cmd)
             if text:
                 self.logger.debug(text, extra=dict(color=False))

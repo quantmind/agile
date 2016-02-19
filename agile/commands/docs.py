@@ -1,41 +1,18 @@
 import os
 from importlib import import_module
 
-from pulsar import ImproperlyConfigured, validate_dict
+from pulsar import ImproperlyConfigured
 
 from cloud import aws
 
-from ..utils import AgileSetting, AgileApp, execute
-
-
-class DocsSetting(AgileSetting):
-    name = "docs"
-    flags = ['--docs']
-    nargs = '?'
-    default = ''
-    const = 'json'
-    desc = "Compile documentation"
-
-
-class DocsBucket(AgileSetting):
-    name = "docs_bucket"
-    flags = ['--docs-bucket']
-    default = ''
-    desc = "AWS bucket where to store docs"
-
-
-class AWSconfig(AgileSetting):
-    name = "aws_config"
-    validator = validate_dict
-    default = dict(region_name='us-east-1')
-    desc = "AWS configuration dictionary"
+from .. import utils
 
 
 content_types = {'fjson': 'application/json',
                  'inv': 'text/plain'}
 
 
-class Docs(AgileApp):
+class Docs(utils.AgileApp):
     """Requires a valid sphinx installation
     """
     description = 'Compile sphinx docs and upload them to aws'
@@ -46,7 +23,7 @@ class Docs(AgileApp):
             raise ImproperlyConfigured('path "%s" missing' % path)
         os.chdir(path)
         try:
-            text = await execute('make', self.cfg.docs)
+            text = await utils.execute('make', self.cfg.docs)
         finally:
             os.chdir(self.app.repo_path)
         self.logger.info(text)

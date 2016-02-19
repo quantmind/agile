@@ -1,0 +1,20 @@
+{
+    "version": "1.2.3",
+    "github": {
+        "pythontest": {
+            "python_module": "agile",
+            "version": "agile.__version__"
+        },
+        "nodetest": {
+            "version": "{{ tests.configs.release.version }}"
+        }
+    },
+    "tasks": {
+        "badtask": ["pythontest"],
+        "releasepy": {
+            "command": [
+                "github:pythontest"
+            ]
+        }
+    }
+}

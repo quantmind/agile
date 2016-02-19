@@ -4,14 +4,14 @@ from urllib.parse import urlsplit
 
 from pulsar import ImproperlyConfigured
 
-from ..utils import AgileApp, as_list
+from .. import utils
 
 
-class HttpCopy(AgileApp):
+class HttpCopy(utils.AgileApp):
     description = 'Copy remote files to local ones via Http'
 
     async def __call__(self, name, cfg, options):
-        srcs = as_list(cfg.get('src'), 'missing src')
+        srcs = utils.as_list(cfg.get('src'), 'missing src')
         target = cfg.get('target')
         if not target:
             raise ImproperlyConfigured('%s: target is missing' % name)

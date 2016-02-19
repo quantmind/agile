@@ -3,14 +3,14 @@ from urllib.parse import urlsplit
 from pulsar import ImproperlyConfigured
 
 from .github import GithubApi
-from .utils import execute
+from . import utils
 
 
 class Git:
 
     @classmethod
     async def create(cls):
-        remote = await execute('git config --get remote.origin.url')
+        remote = await utils.execute('git config --get remote.origin.url')
         raw = remote.split('@')
         if len(raw) == 2:
             raw = raw[1]
@@ -44,16 +44,16 @@ class Git:
     async def toplevel(self):
         """Top level directory for the repository
         """
-        level = await execute('git rev-parse --show-toplevel')
+        level = await utils.execute('git rev-parse --show-toplevel')
         return level
 
     async def branch(self):
-        name = await execute('git rev-parse --abbrev-ref HEAD')
+        name = await utils.execute('git rev-parse --abbrev-ref HEAD')
         return name
 
     async def add(self, *files):
         if files:
-            result = await execute('git add %s' % ' '.join(files))
+            result = await utils.execute('git add %s' % ' '.join(files))
             return result
 
     async def commit(self, *files, msg=None):
@@ -62,12 +62,12 @@ class Git:
         files = list(files)
         files.append('-m')
         files.append(msg or 'commit from pulsar.release manager')
-        result = await execute('git commit %s' % ' '.join(files))
+        result = await utils.execute('git commit %s' % ' '.join(files))
         return result
 
     async def push(self):
         name = await self.branch()
-        result = await execute('git push origin %s' % name)
+        result = await utils.execute('git push origin %s' % name)
         if '[rejected]' in result:
             raise RuntimeError(result)
         return result

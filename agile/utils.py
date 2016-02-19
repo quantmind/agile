@@ -156,9 +156,9 @@ def semantic_version(tag):
         version = list(map(int, tag.split('.')))
         assert len(version) == 3
         return tuple(version)
-    except Exception:
+    except Exception as exc:
         raise ImproperlyConfigured('Could not parse "%s", please use '
-                                   'MAJOR.MINOR.PATCH' % tag)
+                                   'MAJOR.MINOR.PATCH' % tag) from exc
 
 
 def get_auth():
@@ -243,3 +243,8 @@ def load_json(filename):
         text = file.read()
     decoder = json.JSONDecoder(object_pairs_hook=OrderedDict)
     return decoder.decode(text)
+
+
+def config_entry(filename):
+    entry = filename.split('.')[0]
+    return entry.replace('/', '.')
