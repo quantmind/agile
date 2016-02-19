@@ -101,11 +101,15 @@ class AgileApp(metaclass=AgileMeta):
         for com in as_list(coms, 'shell commands should be a list'):
             com = self.render(com)
             self.logger.info('executing shell:%s - %s', name, com)
-            text = await execute(com)
+            text = self.log_execute(await execute(com))
             if text:
-                self.logger.debug('\n%s', text, extra=dict(color=False))
                 results.append(text)
         return results
+
+    def log_execute(self, text):
+        if text:
+            self.logger.debug(text, extra=dict(color=False))
+        return text
 
 
 class AgileSetting(pulsar.Setting):

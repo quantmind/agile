@@ -86,23 +86,21 @@ class Github(utils.AgileApp):
             version = '%s%s' % (tag_prefix, version)
             release['tag_name'] = version
             self.logger.info('Commit changes')
-            result = await git.commit(msg='Release %s' % version)
-            self.logger.debug(result, extra=dict(color=False))
+            self.log_execute(await git.commit(msg='Release %s' % version))
             #
             # Push to github and create tag
             if self.cfg.push:
                 self.logger.info('Push changes')
-                result = await git.push()
-                self.logger.debug(result, extra=dict(color=False))
+                self.log_execute(await git.push())
                 self.logger.info('Creating a new tag %s', version)
                 release = await repo.create_release(release)
                 self.logger.info('Congratulation, the new release %s is out',
                                  release['tag_name'])
                 #
                 # Perform post-release actions
-                for action, value in dist.items():
-                    key = '%s:%s:%s' % (self.command, name, action)
-                    await getattr(self, action)(key, value, release=release)
+                # for action, value in dist.items():
+                #    key = '%s:%s:%s' % (self.command, name, action)
+                #    await getattr(self, action)(key, value, release=release)
 
     async def upload(self, name, src, release=None, **kw):
         if release:
@@ -174,7 +172,7 @@ class Github(utils.AgileApp):
                 section = ''
             body = message.replace(key, '').strip()
             if body:
-                body = capfirst(body)
+                body = body[:1].upper() + body[1:]
                 body = '%s [%s](%s)' % (body, eid, entry['html_url'])
                 notes.append((dte, section.lower(), body))
 
@@ -221,17 +219,15 @@ class Github(utils.AgileApp):
     async def _from_commits(self, repo, created_at):
         #
         # Collect notes from commits
-        commits = await repo.commits(since=created_at)
         notes = []
-        for entry in commits:
+        for entry in await repo.commits(since=created_at):
             commit = entry['commit']
             dte = parser.parse(commit['committer']['date'])
             eid = entry['sha'][:7]
             message = commit['message']
             await self.add_note(repo, notes, message, dte, eid, entry)
             if commit['comment_count']:
-                commit = repo.commit(entry['sha'])
-                for comment in await commit.comments():
+                for comment in await entry.comments():
                     message = comment['body']
                     await self.add_note(repo, notes, message, dte, eid, entry)
         return notes

@@ -44,26 +44,25 @@ class Git:
     async def toplevel(self):
         """Top level directory for the repository
         """
-        level = await utils.execute('git rev-parse --show-toplevel')
-        return level
+        return await utils.execute('git rev-parse --show-toplevel')
 
     async def branch(self):
-        name = await utils.execute('git rev-parse --abbrev-ref HEAD')
-        return name
+        return await utils.execute('git rev-parse --abbrev-ref HEAD')
 
     async def add(self, *files):
         if files:
-            result = await utils.execute('git add %s' % ' '.join(files))
-            return result
+            return await utils.execute('git add %s' % ' '.join(files))
 
     async def commit(self, *files, msg=None):
+        diff = await utils.execute('git diff')
+        if not diff:
+            return await utils.execute('git status')
         if not files:
             files = ('-a',)
         files = list(files)
         files.append('-m')
-        files.append(msg or 'commit from pulsar.release manager')
-        result = await utils.execute('git commit %s' % ' '.join(files))
-        return result
+        files.append('"%s"' % (msg or 'commit from agile release manager'))
+        return await utils.execute('git commit %s' % ' '.join(files))
 
     async def push(self):
         name = await self.branch()
