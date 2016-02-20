@@ -17,8 +17,14 @@ class Sass(utils.AgileApp):
         if node_modules in command:
             args = ' --include-path %s' % node_modules
         for target, src in files.items():
-            cmd = '%s%s %s %s' % (command, args, src, target)
+            if target.endswith('.css'):
+                target = target[:-4]
+            #
+            cmd = '%s%s %s %s.css' % (command, args, src, target)
             self.logger.info('executing sass:%s - %s', name, cmd)
-            text = await utils.execute(cmd)
-            if text:
-                self.logger.debug(text, extra=dict(color=False))
+            self.log_execute(await utils.execute(cmd))
+            #
+            cmd = '%s%s %s %s.min.css --output-style compressed' % (
+                command, args, src, target)
+            self.logger.info('executing sass:%s - %s', name, cmd)
+            self.log_execute(await utils.execute(cmd))

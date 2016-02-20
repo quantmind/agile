@@ -29,6 +29,6 @@ class HttpCopy(utils.AgileApp):
         if not target:
             target = urlsplit(src).path.split('/')[-1]
         target = os.path.join(path, target)
-        self.logger.info('Http copied srource to %s' % target)
+        self.logger.info('%s => %s', src, target)
         with open(target, 'wb') as file:
             file.write(response.content)
