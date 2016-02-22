@@ -28,7 +28,7 @@ class ShellError(AgileError):
 
 class AgileApps(dict):
 
-    async def __call__(self, manager, command):
+    async def __call__(self, manager, command, start=False):
         bits = command.split(':')
         key = bits[0]
         entry = None
@@ -60,6 +60,8 @@ class AgileApps(dict):
             for entry, cfg in config.items():
                 cfg = as_dict(cfg, '%s entry not valid' % entry)
                 await app(entry, cfg, options)
+            if start:
+                return app.start_server()
 
 
 agile_apps = AgileApps()
@@ -88,11 +90,22 @@ class AgileApp(metaclass=AgileMeta):
     def __init__(self, app):
         self.app = app
 
+    @property
+    def _loop(self):
+        return self.app.http._loop
+
     def __call__(self, entry, cfg, options):
         pass
 
     def __getattr__(self, name):
         return getattr(self.app, name)
+
+    def start_server(self):
+        """Start a server
+
+        By default it does nothing
+        """
+        pass
 
     async def shell(self, name, coms, **kw):
         """Execute a list of shell commands
@@ -209,6 +222,21 @@ def task_description(task):
     return task.get("description", "no description given")
 
 
+class TaskExecutor:
+
+    async def execute_tasks(self, tasks, start_server=False):
+        start = False
+        for task in tasks:
+            try:
+                start = start or await TaskCommand(self, task)(start_server)
+            except (ImproperlyConfigured, AgileError) as exc:
+                if self.cfg.force:
+                    self.logger.error(exc)
+                else:
+                    raise
+        return start
+
+
 class TaskCommand:
 
     def __init__(self, manager, task, running=None):
@@ -227,9 +255,10 @@ class TaskCommand:
     def all_tasks(self):
         return self.manager.config['tasks']
 
-    async def __call__(self):
+    async def __call__(self, start_server=False):
         self.manager.logger.info('Executing "%s" task - %s' %
                                  (self.task, task_description(self.info)))
+        started = False
         for command in self.commands:
             if command in self.running:
                 raise ImproperlyConfigured('command already running')
@@ -237,9 +266,11 @@ class TaskCommand:
             if command in self.all_tasks:
                 # the command is another task
                 command = TaskCommand(self.manager, command, self.running)
-                await command()
+                st = await command(start_server)
             else:
-                await agile_apps(self.manager, command)
+                st = await agile_apps(self.manager, command, start_server)
+            started = started or st
+        return started
 
 
 def load_json(filename):

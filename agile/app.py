@@ -64,7 +64,7 @@ class Push(utils.AgileSetting):
     desc = "Push changes to origin"
 
 
-class AgileManager(pulsar.Application):
+class AgileManager(pulsar.Application, utils.TaskExecutor):
     name = 'agile'
     cfg = pulsar.Config(apps=['agile'],
                         loglevel=['pulsar.error', 'info'],
@@ -112,12 +112,14 @@ class AgileManager(pulsar.Application):
         if self.cfg.list_tasks:
             self._list_tasks()
         else:
-            await self._execute()
+            tasks = tuple(self.cfg.tasks or self.config['tasks'])
+            return await self.execute_tasks(tasks, True)
 
     async def _agile(self, worker):   # pragma    nocover
         exit_code = 1
+        started = False
         try:
-            await self.agile()
+            started = await self.agile()
         except utils.AgileExit as exc:
             self.logger.error(str(exc))
         except (ImproperlyConfigured, utils.AgileError) as exc:
@@ -129,20 +131,10 @@ class AgileManager(pulsar.Application):
             exit_code = 2
         else:
             exit_code = 0
-        if self.gitapi:
-            await self.gitapi.http.close()
-        worker._loop.call_soon(self._exit, exit_code)
-
-    async def _execute(self):
-        tasks = tuple(self.cfg.tasks or self.config['tasks'])
-        for task in tasks:
-            try:
-                await utils.TaskCommand(self, task)()
-            except (ImproperlyConfigured, utils.AgileError) as exc:
-                if self.cfg.force:
-                    self.logger.error(exc)
-                else:
-                    raise
+        if not started:
+            if self.gitapi:
+                await self.gitapi.http.close()
+            worker._loop.call_soon(self._exit, exit_code)
 
     def _list_tasks(self):
         tasks = self.config.get('tasks')
