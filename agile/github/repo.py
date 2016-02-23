@@ -20,21 +20,33 @@ class GitRepo(Component):
         """
         return self.get_list('%s/commits' % self, Commit, **data)
 
+    def commit(self, data):
+        return Commit(self, data)
+
     def issues(self, **data):
         """Get a list of pull requests
         """
         return self.get_list('%s/pulls' % self, Issue, **data)
+
+    def issue(self, data):
+        return Issue(self, data)
 
     def pulls(self, **data):
         """Get a list of pull requests
         """
         return self.get_list('%s/pulls' % self, Pull, **data)
 
+    def pull(self, data):
+        return Pull(self, data)
+
     # Releases
     def releases(self, **data):
         """A github release object
         """
         return self.get_list('%s/releases' % self, Release, **data)
+
+    def release(self, data):
+        return Release(self, data)
 
     async def latest_release(self):
         """Get the latest release of this repo
