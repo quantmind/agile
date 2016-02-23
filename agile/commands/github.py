@@ -208,6 +208,7 @@ class Github(utils.AgileApp):
 
     def _remove_notes(self, lines, title):
         # We need to remove the previous notes
+        remove = False
         for line in lines:
             if line.startswith(title):
                 remove = True
