@@ -6,7 +6,7 @@
         "pulsar-agile": {
             "python_module": "agile",
             "version": "agile.__version__",
-            "release_notes": "docs/source/history"
+            "release_notes": "docs/history"
         }
     },
     "shell": {
