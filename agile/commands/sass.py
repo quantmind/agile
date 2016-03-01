@@ -10,7 +10,7 @@ class Sass(utils.AgileApp):
 
     async def __call__(self, name, config, options):
         files = utils.as_dict(config.get('files'), 'missing `files` entry')
-        command = self.render(options.get('command', 'sass'))
+        command = self.render(options.get('executable', 'sass'))
         # TODO: we need a more general algorithm for node_modules really!
         node_modules = 'node_modules'
         args = ''

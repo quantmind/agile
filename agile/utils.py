@@ -46,6 +46,7 @@ class AgileApps(dict):
             raise ImproperlyConfigured('No entry "%s" in %s' %
                                        (key, manager.cfg.config_file))
 
+        config = config.copy()
         options = config.pop('options', {})
         app = App(manager)
 
