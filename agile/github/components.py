@@ -58,6 +58,7 @@ class Component:
         :param data: additional query data
         :return: a list of ``Comp`` objects with data
         """
+        data = dict(((k, v) for k, v in data.items() if v))
         all_data = []
         if limit:
             data['per_page'] = min(limit, 100)

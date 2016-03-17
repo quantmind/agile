@@ -1,5 +1,7 @@
 ---
 git_user: ""
+# Service user (Optional) - the user running the services
+services_user: ""
 #
 # Python version to use
 python_version: 3.5.1

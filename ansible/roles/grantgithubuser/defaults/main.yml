@@ -1,5 +1,3 @@
 ---
 admin: no
 state: present
-# Service user (Optional) - the user running the services
-services_user: ""

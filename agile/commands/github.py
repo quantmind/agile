@@ -52,7 +52,7 @@ class Github(utils.AgileApp):
             self.logger.debug('Releasing a python module')
             version = module_attribute(version)
         tag_prefix = opts.get('tag_prefix', '')
-        current_tag = await repo.validate_tag(version, tag_prefix)
+        current_tag = await repo.validate_tag(version, tag_prefix) or {}
         release['tag_name'] = version
         #
         # Release notes
@@ -116,7 +116,7 @@ class Github(utils.AgileApp):
     async def get_notes(self, repo, current_tag):
         """Fetch release notes from github
         """
-        created_at = current_tag['created_at']
+        created_at = current_tag.get('created_at')
         notes = []
         notes.extend(await self._from_commits(repo, created_at))
         notes.extend(await self._from_pull_requests(repo, created_at))
@@ -217,7 +217,7 @@ class Github(utils.AgileApp):
             if not remove:
                 yield line
 
-    async def _from_commits(self, repo, created_at):
+    async def _from_commits(self, repo, created_at=None):
         #
         # Collect notes from commits
         notes = []
@@ -233,10 +233,12 @@ class Github(utils.AgileApp):
                     await self.add_note(repo, notes, message, dte, eid, entry)
         return notes
 
-    async def _from_pull_requests(self, repo, created_at):
+    async def _from_pull_requests(self, repo, created_at=None):
         #
         # Collect notes from pull requests
-        pulls = await repo.pulls(callback=check_update(created_at),
+        callback = check_update(created_at) if created_at else None
+
+        pulls = await repo.pulls(callback=callback,
                                  state='closed', sort='updated',
                                  direction='desc')
         notes = []

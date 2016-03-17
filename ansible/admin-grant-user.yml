@@ -28,5 +28,5 @@
       default: "no"
 
   roles:
-    - github
+    - common
     - {role: grantgithubuser, when: git_user != ""}
