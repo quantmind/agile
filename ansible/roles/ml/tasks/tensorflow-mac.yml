@@ -1,0 +1,7 @@
+
+- name: install tensorflow
+  pip:
+    state=present
+    requirements='tensorflow-mac-requirements.txt'
+    executable="{{ ansible_pip }}"
+    extra_args='-U'

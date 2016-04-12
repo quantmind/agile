@@ -5,7 +5,6 @@ pyenv_update_git_install: yes
 #
 # Make sure these versions are installed
 pyenv_python_versions:
-  - 3.4.3
   - 3.5.1
 #
 # File containing python requirements to install at global level

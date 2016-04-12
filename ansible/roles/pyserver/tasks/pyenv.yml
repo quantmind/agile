@@ -28,5 +28,5 @@
 - name: Install Python interpreters {{ pyenv_python_versions }}
   shell: . {{ pyenvrc }} && pyenv install {{ item }}
          creates="{{ pyenv_path }}/versions/{{ item }}/bin/python"
-  with_items: pyenv_python_versions
+  with_items: "{{pyenv_python_versions}}"
 

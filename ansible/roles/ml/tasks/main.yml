@@ -1,0 +1,7 @@
+# Debian/Ubuntu
+- include: tensoflow-linux.yml
+  when: ansible_os_family == "Debian"
+
+# Mac OSX
+- include: tensoflow-mac.yml
+  when: ansible_os_family == "Debian"

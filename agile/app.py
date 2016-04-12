@@ -67,8 +67,8 @@ class Push(utils.AgileSetting):
 class AgileManager(pulsar.Application, utils.TaskExecutor):
     name = 'agile'
     cfg = pulsar.Config(apps=['agile'],
-                        loglevel=['pulsar.error', 'info'],
-                        loghandlers=['console_name_level_message'],
+                        log_level=['pulsar.error', 'info'],
+                        log_handlers=['console_name_level_message'],
                         description='Agile release manager',
                         exclude=exclude)
     git = None

@@ -5,7 +5,7 @@
     name='numpy'
     extra_args='-U'
     executable='{{ pyenv_path }}/versions/{{ item }}/bin/pip'
-  with_items: pyenv_python_versions
+  with_items: "{{pyenv_python_versions}}"
   when: numpy == 'yes'
 
 - name: Copy {{ python_requirement_file }}
@@ -19,7 +19,7 @@
     requirements='{{ pyenv_path }}/requirements.txt'
     extra_args='-U'
     executable='{{ pyenv_path }}/versions/{{ item }}/bin/pip'
-  with_items: pyenv_python_versions
+  with_items: "{{pyenv_python_versions}}"
 
 - name: Remove {{ pyenv_path }}/requirements.txt
   file:
