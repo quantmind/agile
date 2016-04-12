@@ -1,9 +1,17 @@
+import os
 import unittest
+from unittest import skipUnless
+
+from agile.github import GithubApi
 
 from pulsar import ImproperlyConfigured
 
 import agile
 
+
+USERNAME = os.environ.get('GITHUB_USERNAME', '')
+TOKEN = os.environ.get('GITHUB_TOKEN', '')
+REPO = os.environ.get('GITHUB_TEST_REPO', '')
 
 original_semantic_version = agile.utils.semantic_version
 original_validate_tag = agile.github.GitRepo.validate_tag
@@ -36,3 +44,13 @@ class AgileTest(unittest.TestCase):
     @classmethod
     def app(cls, **kwargs):
         return agile.AgileManager(**kwargs)
+
+
+@skipUnless(TOKEN and USERNAME and REPO,
+            'Github token, username and test repo must be available')
+class GithubMix:
+
+    @classmethod
+    def setUpClass(cls):
+        cls.github = GithubApi((USERNAME, TOKEN))
+        cls.repo = cls.github.repo(REPO)

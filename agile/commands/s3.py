@@ -1,8 +1,6 @@
 import asyncio
 import glob
 
-from cloud import aws
-
 from .. import utils
 
 
@@ -10,6 +8,11 @@ class S3(utils.AgileApp):
     description = 'Upload files to S3'
 
     async def __call__(self, name, config, options):
+        try:
+            from cloud import aws
+        except ImportError:
+            raise utils.ImproperlyConfigured(
+                'S3 command requires pulsar-cloud, install with pip')
         files = utils.as_dict(config.get('files'),
                               'No files given, must be a dictionary')
         opts = dict(options)

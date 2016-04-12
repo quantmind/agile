@@ -1,3 +1,2 @@
-pulsar-cloud
 jinja2
 sphinx

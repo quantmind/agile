@@ -1,10 +1,10 @@
 from pulsar import ImproperlyConfigured
 from pulsar.apps.test import AsyncAssert
 
-from .githubapi import tests, GithubMix
+import tests
 
 
-class TestGithubApp(GithubMix, tests.AgileTest):
+class TestGithubApp(tests.GithubMix, tests.AgileTest):
     config = 'tests/configs/release.json'
 
     async def test_bad_task(self):

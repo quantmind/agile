@@ -1,28 +1,10 @@
 import os
 import asyncio
-from unittest import skipUnless
-
-from agile.github import GithubApi
 
 import tests
 
 
-USERNAME = os.environ.get('GITHUB_USERNAME', '')
-TOKEN = os.environ.get('GITHUB_TOKEN', '')
-REPO = os.environ.get('GITHUB_TEST_REPO', '')
-
-
-@skipUnless(TOKEN and USERNAME and REPO,
-            'Github token, username and test repo must be available')
-class GithubMix:
-
-    @classmethod
-    def setUpClass(cls):
-        cls.github = GithubApi((USERNAME, TOKEN))
-        cls.repo = cls.github.repo(REPO)
-
-
-class TestGithubApi(GithubMix, tests.AgileTest):
+class TestGithubApi(tests.GithubMix, tests.AgileTest):
 
     def test_url(self):
         repo = self.repo

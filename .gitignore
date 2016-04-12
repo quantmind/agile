@@ -9,9 +9,9 @@
 .coverage
 htmlcov
 release-notes.md
-config.py
 
 #python
+.eggs
 *.pyc
 __pycache__
 build
