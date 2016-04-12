@@ -10,9 +10,9 @@ class TestGithubApi(tests.GithubMix, tests.AgileTest):
         repo = self.repo
         self.assertTrue(repo.api_url)
         self.assertEqual(repo.api_url,
-                         '%s/repos/%s' % (self.github.api_url, REPO))
+                         '%s/repos/%s' % (self.github.api_url, tests.REPO))
         self.assertEqual(repo.client, self.github)
-        self.assertEqual(repo.repo_path, REPO)
+        self.assertEqual(repo.repo_path, tests.REPO)
 
     async def test_commits(self):
         repo = self.repo

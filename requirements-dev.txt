@@ -1,2 +1,4 @@
 flake8
 coverage
+cython
+git+https://github.com/quantmind/pulsar.git

@@ -54,7 +54,7 @@ verbose logging pass ``--log-level agile.debug``.
 Testing
 -----------
 
-To run unit tests, create a ``config.py`` file alongside this file and add
+To run unit tests, create a ``test_config.py`` file alongside this file and add
 the following two entries:
 
 .. code:: python

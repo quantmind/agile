@@ -5,12 +5,11 @@ python:
 
 install:
   - pip install -r requirements-dev.txt
-  - pip install -r requirements.txt
 
 script:
   - flake8
-  - python -m runtests --coverage --log-level info
-  - if [[ $TRAVIS_PYTHON_VERSION == 3.5.1 ]]; then python -m runtests --coveralls; fi
+  - python setup.py test --coverage -q
+  - if [[ $TRAVIS_PYTHON_VERSION == 3.5.1 ]]; then python setup.py test --coveralls; fi
 
 notifications:
   email: false

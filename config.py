@@ -4,6 +4,10 @@ import sys
 import json
 import subprocess
 
+try:
+    import test_config
+except ImportError:
+    pass
 
 test_modules = ['tests']
 test_timeout = 30
