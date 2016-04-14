@@ -1,0 +1,8 @@
+#
+#
+---
+- name: Greate symbolic link to {{ install_dir }}
+  file:
+    src="{{ install_dir }}"
+    path="{{ service_home_path }}/latest"
+    state=link

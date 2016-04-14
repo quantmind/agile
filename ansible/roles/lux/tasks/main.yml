@@ -1,15 +1,5 @@
-- include: admin.yml
-  when: command == "install"
-
 - include: install.yml
   when: command == "install"
-  become: yes
-  become_user: "{{ service_user }}"
-
-- include: content.yml sudo=yes
-  when: command == "install" and github_content_repository != ""
-  become: yes
-  become_user: "{{ service_user }}"
 
 - include: command.yml sudo=yes
   when: command != 'install' and venv_path.stat.exists and venv_path.stat.isdir
