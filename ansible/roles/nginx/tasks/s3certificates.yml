@@ -1,32 +1,30 @@
 ###
-#   Main installation script
-#
-#   Run only when a sys-admin execute the role with admin_user as git_user
+#   Download SSL certificates from S3
 ---
 - name: copy certificate to server from s3 bucket {{ certificate_bucket }}
   s3:
-    bucket={{ certificate_bucket }}
+    bucket="{{ certificate_bucket }}"
     object="{{ item.certificate }}.crt"
-    dest="{{ server_crt_dir }}/{{ item.name }}/server.crt"
+    dest="{{ server_crt_dir }}/{{ item.domain }}/server.crt"
     mode=get
-  with_items: "{{ nginx_domains }}"
-  when: item.certificate
+  with_items: "{{ services }}"
+  when: item.certificate is defined and item.domain is defined
 
 - name: copy certificate key to server from s3 bucket {{ certificate_bucket }}
   s3:
-    bucket={{ certificate_bucket }}
+    bucket="{{ certificate_bucket }}"
     object="{{ item.certificate }}.key"
-    dest="{{ server_crt_dir }}/{{ item.name }}/server.key.enc"
+    dest="{{ server_crt_dir }}/{{ item.domain }}/server.key.enc"
     mode=get
-  with_items: "{{ nginx_domains }}"
-  when: item.certificate
+  with_items: "{{ services }}"
+  when: item.certificate is defined and item.domain is defined
 
 # Diffie-Hellman parameter for DHE ciphersuites, recommended 2048 bits
 - name: copy certificate dh params to server from s3 bucket {{ certificate_bucket }}
   s3:
-    bucket={{ certificate_bucket }}
+    bucket="{{ certificate_bucket }}"
     object="{{ item.certificate }}.dhparams"
-    dest="{{ server_crt_dir }}/{{ item.name }}/server.dhparams"
+    dest="{{ server_crt_dir }}/{{ item.domain }}/server.dhparams"
     mode=get
-  with_items: "{{ nginx_domains }}"
-  when: item.certificate
+  with_items: "{{ services }}"
+  when: item.certificate is defined and item.domain is defined

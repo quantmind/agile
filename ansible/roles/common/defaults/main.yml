@@ -3,8 +3,6 @@
 # The common role is required by all playbooks using roles in this package
 #
 git_user: ""
-# Service user (Optional) - the user running the services
-services_user: ""
 #
 # Python version to use
 python_version: 3.5.1
@@ -16,3 +14,12 @@ pyenv_owner_home: "{{ ansible_env.HOME }}"
 # Redis - client configuration
 redis_port: 6379
 redis_host: '127.0.0.1'
+
+
+# List of objects defining services.
+#
+# Entries for a give object are all optionals:
+#
+# - name: service name used by lux role
+# - domain: service domain, used by nginx role
+services: []

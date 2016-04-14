@@ -17,6 +17,4 @@ nginx_default_index_html: |
 #
 # if specified, download certificates from this s3 bucket
 certificate_bucket: ""
-#
-# list of domain to configure
-nginx_domains: []
+

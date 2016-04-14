@@ -13,16 +13,8 @@ requirement_files: ['requirements.txt']
 #
 #
 # ##############################
-# Services
-#
-service_user: ''
-# List of objects defining services
-services: [{
-  name: 'changeme',
-  config: 'path-to-config.py',
-  workers: 1,
-  bind: ':8060'
-}]
+# Service user
+service_user: '<change-me>'
 #
 #
 # ##############################

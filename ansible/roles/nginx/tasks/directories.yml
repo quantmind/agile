@@ -4,7 +4,7 @@
 ---
 - name: Make sure certificate directories are available
   file:
-    path="{{ server_crt_dir }}/{{ item.name }}"
+    path="{{ server_crt_dir }}/{{ item.domain }}"
     state=directory
-  with_items: "{{ nginx_domains }}"
-  when: item.certificate
+  with_items: "{{ services }}"
+  when: item.certificate is defined and item.domain is defined

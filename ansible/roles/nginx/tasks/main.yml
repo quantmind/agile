@@ -6,11 +6,7 @@
 
 - include: directories.yml
 
-- include: certificates.yml
-  when: certificate_bucket == ""
-
 - include: s3certificates.yml
-  when: certificate_bucket != ""
 
 - include: installcrt.yml
 
