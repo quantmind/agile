@@ -25,24 +25,19 @@
       accept_hostkey=True
       recursive=no
 
-- name: Install requirements-pre.txt via pip
+- name: Install {{ requirement_files }} via pip
   pip:
       virtualenv={{ install_dir }}/venv
       chdir="{{ install_dir }}/repo"
-      requirements=requirements-pre.txt
-
-- name: Install requirements.txt via pip
-  pip:
-      virtualenv={{ install_dir }}/venv
-      chdir="{{ install_dir }}/repo"
-      requirements=requirements.txt
+      requirements={{ item }}
+  with_items: "{{ requirement_files }}"
 
 - name: npm install project dependencies in {{ install_dir }}/repo
   npm: path={{ install_dir }}/repo
   when: npm_install
 
 - name: agile {{ agile_build }}
-  shell: "{{ install_dir }}/venv/bin/python config.py {{ agile_build }}"
+  shell: "{{ install_dir }}/venv/bin/python setup.py install"
   args:
     chdir: "{{ install_dir }}/repo"
   when: agile_build

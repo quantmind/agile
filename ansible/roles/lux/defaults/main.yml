@@ -9,7 +9,7 @@ command: 'install'
 npm_install: true
 # Agile command for building the site
 agile_build: 'build'
-
+requirement_files: ['requirements.txt']
 #
 # ##############################
 # Github repo and credentials
