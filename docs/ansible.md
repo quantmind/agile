@@ -50,5 +50,7 @@ Install and configure redis (ubuntu 15+ only)
 
 ## Lux Role
 
-This role is a template for deploying a [lux](https://github.com/quantmind/lux) powered web server.
+This role is a template for deploying a [lux](https://github.com/quantmind/lux) powered web servers.
+The role install the server software from a **github_repository**.
+
 

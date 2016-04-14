@@ -41,13 +41,11 @@
   npm: path={{ install_dir }}/repo
   when: npm_install
 
-- name: grunt build (creates js and css bundles)
-  shell: grunt
+- name: agile {{ agile_build }}
+  shell: "{{ install_dir }}/venv/bin/python config.py {{ agile_build }}"
   args:
     chdir: "{{ install_dir }}/repo"
-  environment:
-    PATH: "{{ install_dir }}/venv/bin:{{ ansible_env.PATH }}"
-  when: grunt_build
+  when: agile_build
 
 - name: Remove {{ install_dir }}/repo/node_modules
   file:
