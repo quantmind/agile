@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from setuptools import setup, find_packages
 
-import config
+import agile_config as config
 
 
 if __name__ == '__main__':
