@@ -1,8 +1,8 @@
 ---
-python_version: 3.5.1
 # Comand to run - install, create_superuser, stop
 command: 'install'
-npm_install: false
+npm_install: true
+grunt_build: false
 
 # username of the github user installing services
 github_boot: 'change me'

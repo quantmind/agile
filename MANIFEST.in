@@ -2,12 +2,8 @@ include MANIFEST.in
 include LICENSE
 include README.rst
 include requirements.txt
-include runtests.py
+include config.py
 include docs/Makefile docs/make.bat
-recursive-exclude * __pycache__
-recursive-exclude * *.pyc
-recursive-exclude * *.pyo
-recursive-exclude * *.orig
-recursive-include docs *.md *.rst *.json *.py
+recursive-include docs *.md *.py
 recursive-include ansible *.yml *.j2 *.txt
 recursive-include tests *.py

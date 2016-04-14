@@ -47,7 +47,7 @@
     chdir: "{{ install_dir }}/repo"
   environment:
     PATH: "{{ install_dir }}/venv/bin:{{ ansible_env.PATH }}"
-  when: npm_install
+  when: grunt_build
 
 - name: Remove {{ install_dir }}/repo/node_modules
   file:

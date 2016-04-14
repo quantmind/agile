@@ -1,4 +1,7 @@
 ---
+#
+# The common role is required by all playbooks using roles in this package
+#
 git_user: ""
 # Service user (Optional) - the user running the services
 services_user: ""
