@@ -18,8 +18,10 @@ redis_host: '127.0.0.1'
 
 # List of objects defining services.
 #
-# Entries for a give object are all optionals:
+# Entries for a given object are all optionals:
 #
-# - name: service name used by lux role
-# - domain: service domain, used by nginx role
+# - name:     service name used by lux role (required for a lux service)
+# - config:   relative path to lux config file to override (required for a lux service)
+# - template: jinjia2 template path for additional config parameters (optional)
+# - domain:   service domain, used by nginx role
 services: []

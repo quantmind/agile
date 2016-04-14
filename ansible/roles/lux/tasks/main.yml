@@ -1,5 +1,11 @@
 - include: install.yml
   when: command == "install"
 
-- include: command.yml sudo=yes
-  when: command != 'install' and venv_path.stat.exists and venv_path.stat.isdir
+- name: Check if service path {{ service_home_path }}/latest is available
+  stat: path={{ service_home_path }}/latest
+  register: latest_path
+
+- include: command.yml
+  when: command != 'install' and latest_path.stat.exists
+  become: yes
+  become_user: "{{ service_user }}"

@@ -7,3 +7,8 @@ service_running_path: "{{ service_home }}/running"
 
 # Log directory
 service_log_path: "{{ lux_log_path }}/{{ service_user }}"
+
+# venv path
+service_latest_path: "{{ service_home_path }}/latest"
+service_bin_path: "{{ service_latest_path }}/venv/bin"
+service_script: "{{ service_bin_path }}/{{ service_user }}"
