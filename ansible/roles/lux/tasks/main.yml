@@ -1,8 +1,8 @@
 - include: install.yml
   when: command == "install"
 
-- name: Check if service path {{ service_home_path }}/latest is available
-  stat: path={{ service_home_path }}/latest
+- name: Check if service path {{ service_latest_path }} is available
+  stat: path="{{ service_latest_path }}"
   register: latest_path
 
 - include: command.yml

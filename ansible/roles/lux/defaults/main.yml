@@ -7,8 +7,7 @@ command: 'install'
 #
 # Install npm?
 npm_install: true
-# Agile command for building the site
-agile_build: 'build'
+# requirement files to pip install
 requirement_files: ['requirements.txt']
 #
 #
