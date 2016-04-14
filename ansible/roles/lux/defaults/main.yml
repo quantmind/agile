@@ -5,8 +5,8 @@ command: 'install'
 # ##############################
 # Customize installation
 #
+# Install npm?
 npm_install: true
-grunt_build: false
 # Agile command for building the site
 agile_build: 'build'
 
