@@ -2,7 +2,7 @@
 #
 ---
 - name: Get the timestamp
-  set_fact: install_dir="{{service_home}}/{{lookup('pipe','date +%Y%m%d%H%M%S')}}"
+  set_fact: install_dir="{{ service_home_path }}/{{lookup('pipe','date +%Y%m%d%H%M%S')}}"
 
 - debug: var=install_dir
 
@@ -25,6 +25,13 @@
       accept_hostkey=True
       recursive=no
 
+- name: configuring services
+  template:
+    src=config.py.j2
+    dest="{{ install_dir }}/repo/{{ item.config }}"
+  with_items: "{{ services }}"
+
+
 - name: Install {{ requirement_files }} via pip
   pip:
       virtualenv={{ install_dir }}/venv
@@ -36,40 +43,30 @@
   npm: path={{ install_dir }}/repo
   when: npm_install
 
-- name: agile {{ agile_build }}
+- name: setup.py install
   shell: "{{ install_dir }}/venv/bin/python setup.py install"
   args:
     chdir: "{{ install_dir }}/repo"
-  when: agile_build
 
-- name: Remove {{ install_dir }}/repo/node_modules
+- name: Remove repository {{ install_dir }}/repo
   file:
-    path="{{ install_dir }}/repo/node_modules"
+    path="{{ install_dir }}/repo"
     state=absent
-
-- name: configuring {{ service_name }}/server_config.py file
-  template:
-    src=config.py.j2
-    dest="{{ install_dir }}/repo/{{ service_name }}/server_config.py"
-
-- name: configuring {{ service_name }}/config.py file
-  template:
-    src="{{ service_config_template }}"
-    dest="{{ install_dir }}/repo/{{ service_name }}/config.py"
 
 - name: Create logrotate configuration.
   template:
     src=lux-logrotate.txt.j2
-    dest="/etc/logrotate.d/{{ service_name }}"
+    dest="/etc/logrotate.d/{{ item.name }}"
   become: yes
   become_user: root
+  with_items: "{{ services }}"
 
 - name: Change permission to logrotate
   file:
-    path="/etc/logrotate.d/{{ service_name }}"
+    path="/etc/logrotate.d/{{ item.name }}"
     mode=0644
     owner=root
     group=root
   become: yes
   become_user: root
-
+  with_items: "{{ services }}"

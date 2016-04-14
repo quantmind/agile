@@ -11,6 +11,20 @@ npm_install: true
 agile_build: 'build'
 requirement_files: ['requirements.txt']
 #
+#
+# ##############################
+# Services
+#
+service_user: ''
+# List of objects defining services
+services: [{
+  name: 'changeme',
+  config: 'path-to-config.py',
+  workers: 1,
+  bind: ':8060'
+}]
+#
+#
 # ##############################
 # Github repo and credentials
 #
@@ -20,22 +34,21 @@ github_boot: 'change me'
 github_repository: 'change me'
 # Can be a SHA1 hash, branch name, or tag name
 deploy_tag: 'master'
+# A github repository for content
+github_content_repository: ''
 #
-# Deployment key variables
+#
+# Deployment key variables location
+#
+# It assumes the deployment secret key is located on an
+# s3 bucket `deploy_key_bucket` at key 'deploy_key'
 deploy_key_bucket: 'change me'
 deploy_key: 'change me'
 deploy_key_password: 'change me'
+
 
 # Base directory of service
 lux_service_path: '/var/opt'
 # Base directory of service logs
 lux_log_path: '/var/log'
-#
-# service user
-service_user: 'lux'
-service_name: 'lux'
-#
-# Pulsar configuration
-service_workers: 1
-service_bind: ':8060'
 

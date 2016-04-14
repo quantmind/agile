@@ -4,7 +4,7 @@
 ---
 - name: Create command create_superuser
   command:
-    venv/bin/{{ service_name }}
+    venv/bin/{{ service_user }}
     create_superuser
     --username {{ su_login }}
     --email {{ su_email }}
@@ -15,7 +15,7 @@
 
 - name: Execute command {{ command }}
   command:
-    "venv/bin/{{ service_name }}"
+    "venv/bin/{{ service_user }}"
     "{{ command }}"
   args:
     chdir: "{{ install_dir }}"
