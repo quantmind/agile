@@ -1,3 +1,7 @@
+- name: Set process_name to {{ service_user }} if not given
+  set_fact: process_name="{{ service_user }}"
+  when: process_name == ''
+
 - include: install.yml
   when: command == "install"
 

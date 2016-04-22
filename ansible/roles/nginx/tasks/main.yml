@@ -1,16 +1,8 @@
 ---
-# Debian/Ubuntu
-- include: debian.yml sudo=yes
-  become_user: root
-  when: ansible_os_family == "Debian"
+- include: install.yml
+  when: nginx_state == 'install'
 
-- include: directories.yml
+- name: Set nginx state to {{ nginx_state }}
+  service: name=nginx state={{ nginx_state }}
+  when: nginx_state != 'install'
 
-- include: s3certificates.yml
-
-- include: installcrt.yml
-
-- include: conf.yml
-
-- name: Reload nginx service
-  service: name=nginx state=reloaded

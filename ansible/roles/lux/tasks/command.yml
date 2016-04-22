@@ -1,13 +1,22 @@
 ###
-#   Execute a command other than install and create_superuser
+#   Execute a command other than install
 #
 ---
-- name: Create command create_superuser
+- name: Run command create_superuser
   command:
-    "{{ service_script }} create_superuser --username {{ su_login }} --email {{ su_email }} --password {{ su_password }}"
+    '{{ service_script }} create_superuser --username {{ su_login }} --email {{ su_email }} --password {{ su_password }}'
   when: command == "create_superuser"
 
-- name: Execute command {{ command }}
+- name: Include deploy script when {{ command }} is deploy
+  include: deploy.yml
+  when: command == 'deploy'
+
+- name: Include clean script when {{ command }} is clean
+  include: clean.yml
+  when: command == 'clean'
+
+- name: Execute {{ command }}
   command:
-    "{{ service_script }} {{ command }}"
-  when: command != "create_superuser"
+    '{{ service_script }} {{ item }} {{ command }}'
+  when: command != 'create_superuser' and command != 'deploy' and command != 'clean'
+  with_items: "{{ lux_services }}"

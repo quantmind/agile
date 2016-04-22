@@ -9,11 +9,14 @@ command: 'install'
 npm_install: true
 # requirement files to pip install
 requirement_files: ['requirements.txt']
+cookiename: ''
+lux_services: []
 #
 #
 # ##############################
 # Service user
 service_user: '<change-me>'
+process_name: ''
 #
 #
 # ##############################
@@ -27,6 +30,7 @@ github_repository: 'change me'
 deploy_tag: 'master'
 # A github repository for content
 github_content_repository: ''
+github_webhook_secret: ''
 #
 #
 # Deployment key variables location
