@@ -14,8 +14,7 @@ lux_services: []
 #
 #
 # ##############################
-# Service user
-service_user: '<change-me>'
+# process name
 process_name: ''
 #
 #

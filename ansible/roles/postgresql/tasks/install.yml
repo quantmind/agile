@@ -1,0 +1,15 @@
+---
+- name: ensure apt cache is up to date
+  apt: update_cache=yes
+
+- name: ensure PostgreSql is installed
+  apt: name={{ postgresql_package }}
+  when: postgresql_installdb == true
+
+- name: enable and start the 'postgresql' service
+  service: name=postgresql state=restarted enabled=true
+  when: postgresql_installdb == true
+
+- name: ensure PostgreSql Client is installed
+  apt: name={{ postgresql_client_package }}
+  when: postgresql_installdb == false

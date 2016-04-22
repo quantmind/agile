@@ -1,4 +1,11 @@
 ---
+- name: Make sure {{ pyenv_path }} directory exists
+  file:
+    path: "{{ pyenv_path }}"
+    owner: "{{ pyenv_owner }}"
+    group: "{{ pyenv_owner }}"
+    state: directory
+
 - name: Copy {{ ansible_requirement_file }}
   copy:
     src: "{{ ansible_requirement_file }}"
@@ -10,6 +17,7 @@
     requirements='{{ pyenv_path }}/requirements-ansible.txt'
     executable="{{ ansible_pip }}"
     extra_args='-U'
+  become: yes
 
 - name: Remove {{ pyenv_path }}/requirements-ansible.txt
   file:

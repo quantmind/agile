@@ -1,8 +1,11 @@
 ---
 #
-# Install PostgreSql database?
+# Install PostgreSql server?
+# Set to true if the server need to be installed in the system
 postgresql_installdb: false
-postgresql_state: present
+postgresql_package: postgresql-9.5
+postgresql_client_package: postgresql-client-9.5
+postgresql_command: create
 #
 # Superuser for service
 #
@@ -13,3 +16,6 @@ postgresql_user: changeme
 postgresql_db: changeme
 postgresql_password: changeme
 postgresql_role_flags: "CREATEDB,CREATEROLE,LOGIN"
+#
+# list of postgresql databases to manage
+postgresql_databases: []

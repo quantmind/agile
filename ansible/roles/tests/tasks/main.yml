@@ -1,0 +1,22 @@
+---
+- name: Find the path to the python interpreter
+  command: which python
+  register: pythonpath
+
+- name: Check python version
+  shell: 'python --version'
+  register: python_version
+
+- debug: var=python_version
+
+- name: Check python path
+  shell: 'python -c "import sys; print(sys.path)"'
+  register: python_version
+
+- debug: var=python_version
+
+- name: Check boto import
+  shell: 'python -c "import boto; print boto.__version__"'
+  register: botoversion
+
+- debug: var=botoversion.stdout

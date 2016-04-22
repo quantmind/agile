@@ -1,4 +1,16 @@
 ---
-- include: pq.yml
-  become_user: root
-  when: postgresql_installdb == true
+- include: install.yml
+  become: yes
+  when: postgresql_command == 'install'
+
+- include: create.yml
+  when: postgresql_command == 'create'
+
+- include: drop.yml
+  when: postgresql_command == 'drop'
+
+- include: dump.yml
+  when: postgresql_command == 'dump'
+
+- include: restore.yml
+  when: postgresql_command == 'restore'

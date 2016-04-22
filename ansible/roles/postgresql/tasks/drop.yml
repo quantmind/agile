@@ -1,0 +1,9 @@
+---
+- name: Drop databases {{ postgresql_databases }}
+  shell: export PGPASSWORD={{postgresql_password}}
+         && psql
+            -h {{postgresql_host}}
+            -U {{postgresql_user}}
+            -p {{postgresql_port}}
+            -c 'DROP DATABASE {{item}};'
+  with_items: '{{ postgresql_databases }}'

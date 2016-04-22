@@ -1,0 +1,18 @@
+---
+- name: Create databases {{ postgresql_databases }}
+  shell: export PGPASSWORD={{postgresql_password}}
+         && psql
+            -h {{postgresql_host}}
+            -U {{postgresql_user}}
+            -p {{postgresql_port}}
+            -c 'CREATE DATABASE {{item}};'
+  with_items: '{{ postgresql_databases }}'
+
+- name: Grant priveleges databases {{ postgresql_databases }}
+  shell: export PGPASSWORD={{postgresql_password}}
+         && psql
+            -h {{postgresql_host}}
+            -U {{postgresql_user}}
+            -p {{postgresql_port}}
+            -c 'GRANT ALL PRIVILEGES ON DATABASE {{item}} to {{postgresql_user}};'
+  with_items: '{{ postgresql_databases }}'

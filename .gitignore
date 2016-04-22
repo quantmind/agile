@@ -13,6 +13,7 @@ release-notes.md
 #python
 .eggs
 *.pyc
+*.retry
 __pycache__
 build
 _build

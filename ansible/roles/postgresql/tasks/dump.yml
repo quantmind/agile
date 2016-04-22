@@ -1,0 +1,24 @@
+---
+
+- name: dump
+  shell: export PGPASSWORD={{postgresql_password}}
+         && pg_dump
+            -h {{postgresql_host}}
+            -U {{postgresql_user}}
+            -p {{postgresql_port}}
+            -d {{item}}
+            -f /tmp/{{item}}_{{time}}.sql
+  with_items: postgresql_databases
+
+
+- name: copy dump to local
+  synchronize: mode=pull src=/tmp/{{item}}_{{time}}.sql dest=/tmp/{{item}}_{{time}}.sql
+  with_items: postgresql_databases
+  when: restore_host == 'local'
+
+
+- name: remove dump file from dump_host_group
+  file: path=/tmp/{{item}}_{{time}}.sql state=absent
+  with_items: postgresql_databases
+  when: restore_host == 'local'
+

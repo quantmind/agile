@@ -1,0 +1,105 @@
+---
+
+- name: import postgresql* vars
+  include_vars: ../../postgresql/defaults/main.yml
+
+- name: update postgresql* vars
+  include_vars: ../../inventories/vars/local.yml
+  when: restore_host == 'local'
+
+- name: update postgresql* vars
+  include_vars: ../../inventories/vars/stage.yml
+  when: restore_host == 'stage'
+
+
+  # create tmp DBs to restore the dump to
+  # later they will be renamed to original names
+- name: create tmp destination DB
+  shell: export PGPASSWORD={{postgresql_password}}
+         && createdb
+            -h {{postgresql_host}}
+            -U {{postgresql_user}}
+            -p {{postgresql_port}}
+            tmp_{{item}}
+  with_items: postgresql_databases
+
+  # in dump file replace owner to current postgresql_user
+- name: replace tables owner in dump file
+  replace: dest=/tmp/{{item}}_{{time}}.sql
+           regexp="(?<=OWNER\sTO\s)[a-zA-Z0-9_]*(?=;)"
+           replace={{postgresql_user}}
+  with_items: postgresql_databases
+
+- name: restore to tmp DB
+  shell: export PGPASSWORD={{postgresql_password}}
+         && psql
+            -h {{postgresql_host}}
+            -U {{postgresql_user}}
+            -p {{postgresql_port}}
+            -d tmp_{{item}}
+            -f /tmp/{{item}}_{{time}}.sql
+  with_items: postgresql_databases
+
+  # create sql files from template to clean data in tmp DB
+- name: create sql files for cleaning data
+  template: src=sql_clean_data.j2 dest=/tmp/clean_{{item}}.sql
+  with_items: postgresql_databases
+
+- name: clean data sqls exec
+  shell: export PGPASSWORD={{postgresql_password}}
+         && psql
+            -h {{postgresql_host}}
+            -U {{postgresql_user}}
+            -p {{postgresql_port}}
+            -d tmp_{{item}}
+            -f /tmp/clean_{{item}}.sql
+  with_items: postgresql_databases
+
+  # this DB is needed to operate from when all
+  # existing DBs are chaned:
+  # originals - dropped, tmps - renamed
+- name: create tmp2_proxy DB
+  shell: export PGPASSWORD={{postgresql_password}}
+         && createdb
+            -h {{postgresql_host}}
+            -U {{postgresql_user}}
+            -p {{postgresql_port}}
+            tmp2_proxy
+
+
+  # create sql files from template to drop & rename DBs
+- name: create sql files for drop & rename
+  template: src=sql_drop_rename.j2 dest=/tmp/restore_{{item}}.sql
+  with_items: postgresql_databases
+
+  # execute created sql files
+- name: drop original and rename tmp DB
+  shell: export PGPASSWORD={{postgresql_password}}
+         && psql
+            -h {{postgresql_host}}
+            -U {{postgresql_user}}
+            -p {{postgresql_port}}
+            -d tmp2_proxy
+            -f /tmp/restore_{{item}}.sql
+  with_items: postgresql_databases
+
+  # drop proxy DB
+- name: drop tmp2_proxy destination DB
+  shell: export PGPASSWORD={{postgresql_password}}
+         && dropdb
+            -h {{postgresql_host}}
+            -U {{postgresql_user}}
+            -p {{postgresql_port}}
+            tmp2_proxy
+
+- name: remove dump files
+  file: path=/tmp/{{item}}_{{time}}.sql state=absent
+  with_items: postgresql_databases
+
+- name: remove drop & rename sql files
+  file: path=/tmp/restore_{{item}}.sql state=absent
+  with_items: postgresql_databases
+
+- name: remove clean sql files
+  file: path=/tmp/clean_{{item}}.sql state=absent
+  with_items: postgresql_databases
