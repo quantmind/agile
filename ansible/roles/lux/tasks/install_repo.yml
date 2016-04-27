@@ -2,7 +2,10 @@
 #
 ---
 - name: Get the timestamp
-  set_fact: install_dir="{{ service_home_path }}/{{lookup('pipe','date +%Y%m%d%H%M%S')}}"
+  set_fact: install_timestamp="{{lookup('pipe','date +%Y%m%d%H%M%S')}}"
+
+- name: Installation directory
+  set_fact: install_dir="{{ service_home_path }}/{{ install_timestamp }}"
 
 - debug: var=install_dir
 

@@ -10,6 +10,8 @@ PUBSUB_STORE = data_store = '%s/4' % redis_server
 SESSION_COOKIE_NAME = '{{ cookiename }}'
 {% endif %}
 
+MEDIA_URL = '/media/{{ install_timestamp }}/'
+
 {% if github_content_repository %}
 CONTENT_REPO = '{{ install_dir }}/content'
 {% if github_webhook_secret %}
