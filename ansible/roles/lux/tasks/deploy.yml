@@ -12,25 +12,26 @@
   when: check_service_running_path.stat.exists
   register: service_running_path_version
 
-- name: Symlink to ROLLBACK path {{ service_running_path_version.stdout }} to {{ service_rollback_path }}
+- name: Symlink to ROLLBACK path {{ service_rollback_path }}
   file:
     src="{{ service_running_path_version.stdout }}"
     path="{{ service_rollback_path }}"
     state=link
-  when: check_service_running_path.stat.exists and service_running_path_version.stdout != service_running_path_version.stdout
+  when: check_service_running_path.stat.exists
 
 - name: Stop servers
   command:
     "{{ service_script }} {{ item }} stop"
   with_items: "{{ lux_services }}"
-
-- name: Start servers
-  command:
-    "{{ service_script }} {{ item }} serve"
-  with_items: "{{ lux_services }}"
+  when: check_service_running_path.stat.exists
 
 - name: Symlink to RUNNING path {{ service_latest_path_version.stdout }} to {{ service_running_path }}
   file:
     src="{{ service_latest_path_version.stdout }}"
     path="{{ service_running_path }}"
     state=link
+
+- name: Start servers with {{ service_script }}
+  command:
+    "{{ service_script }} {{ item }} serve"
+  with_items: "{{ lux_services }}"

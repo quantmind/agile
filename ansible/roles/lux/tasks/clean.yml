@@ -1,0 +1,15 @@
+---
+
+- name: Copy clean.py script
+  copy:
+    src: "clean.py"
+    dest: "{{ service_home_path }}/clean.py"
+
+- name: Run clean.py
+  shell: "{{ python_bin }}/python clean.py"
+  args:
+    chdir: "{{ service_home_path }}"
+  register: clean_result
+
+- debug: var=clean_result.stdout
+
