@@ -63,7 +63,7 @@ class Component:
         if limit:
             data['per_page'] = min(limit, 100)
         while url:
-            response = await self.http.get(url, data=data, auth=self.auth)
+            response = await self.http.get(url, json=data, auth=self.auth)
             response.raise_for_status()
             result = response.json()
             n = m = len(result)
@@ -140,8 +140,8 @@ class Release(Issue):
         size = info[stat.ST_SIZE]
         response = await self.http.post(
             url, data=stream_upload(filename), auth=self.auth,
-            headers=[('content-type', content_type),
-                     ('content-length', str(size))])
+            headers={'content-type': content_type,
+                     'content-length': str(size)})
         response.raise_for_status()
         return Asset(self.client, response.json())
 

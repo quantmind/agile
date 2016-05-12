@@ -116,7 +116,7 @@ class Github(utils.AgileApp):
     async def get_notes(self, repo, current_tag):
         """Fetch release notes from github
         """
-        created_at = current_tag.get('created_at')
+        created_at = current_tag.data.get('created_at')
         notes = []
         notes.extend(await self._from_commits(repo, created_at))
         notes.extend(await self._from_pull_requests(repo, created_at))

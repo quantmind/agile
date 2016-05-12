@@ -7,6 +7,7 @@ from pulsar import ensure_future, ImproperlyConfigured, validate_list
 
 from .git import Git
 from . import utils
+from . import commands      # noqa
 
 
 exclude = set(pulsar.Config().settings)

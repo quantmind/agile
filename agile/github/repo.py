@@ -64,7 +64,7 @@ class GitRepo(Component):
         """Create a new release
         """
         url = '%s/releases' % self
-        response = await self.http.post(url, data=release, auth=self.auth)
+        response = await self.http.post(url, json=release, auth=self.auth)
         response.raise_for_status()
         return Release(self, response.json())
 
@@ -95,10 +95,10 @@ class GitRepo(Component):
         """
         url = '%s/labels' % self
         data = dict(name=name, color=color)
-        response = await self.http.post(url, data=data, auth=self.auth)
+        response = await self.http.post(url, json=data, auth=self.auth)
         if response.status_code == 201:
             return True
         elif update:
             url = '%s/%s' % (url, name)
-            response = await self.http.patch(url, data=data, auth=self.auth)
+            response = await self.http.patch(url, json=data, auth=self.auth)
         response.raise_for_status()
