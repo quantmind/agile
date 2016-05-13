@@ -81,7 +81,7 @@ The install command install the software, as one would expect, but does not star
 
 
 #### Additional variables
-A list of additional variables, name (default value), for twicking installation. These variables should be overwritten in the ``vars`` directory of the ``inventories`` role in your application roles.
+A list of additional variables, name (default value), for twicking installation. These variables should be overwritten in the ``vars`` directory of the ``inventories`` role in your application.
 
 * **lux_service_path** (``/var/opt``) path where to install services
 * **requirement_files** (``["requirements.txt"]``) List of requirement files to pip install
