@@ -75,10 +75,14 @@ The role install the server software from a **github_repository**.
 
 The command to run, one of **install**, **create_supersuer**, **stop**
 
-**default*: install
+**default**: install
+
+The install command install the software, as one would expect, but does not start any service.
 
 
 #### Additional variables
 A list of additional variables, name (default value), for twicking installation. These variables should be overwritten in the ``vars`` directory of the ``inventories`` role in your application roles.
 
-* ``install_npm`` (``false``) install node dependencies from ``package.json``
+* **lux_service_path** (``/var/opt``) path where to install services
+* **requirement_files** (``["requirements.txt"]``) List of requirement files to pip install
+* **npm_install** (``false``) install node packages from ``package.json`` file (must be available)
