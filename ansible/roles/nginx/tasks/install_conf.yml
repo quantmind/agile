@@ -2,16 +2,6 @@
 #   Install nginx configuration files for services providing the <domain> key
 #
 ---
-- name: Remove {{ nginx_conf_dir }}/sites-enabled
-  file:
-    path="{{ nginx_conf_dir }}/sites-enabled"
-    state=absent
-
-- name: Create {{ nginx_conf_dir }}/sites-enabled directory
-  file:
-    path="{{ nginx_conf_dir }}/sites-enabled"
-    state=directory
-
 - name: copy server conf files to {{ nginx_conf_dir }}/sites-available
   template:
     src="nginx.conf.j2"

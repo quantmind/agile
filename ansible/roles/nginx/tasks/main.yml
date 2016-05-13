@@ -2,7 +2,10 @@
 - include: install.yml
   when: nginx_state == 'install'
 
+- include: clear.yml
+  when: nginx_state == 'clear_sites'
+
 - name: Set nginx state to {{ nginx_state }}
   service: name=nginx state={{ nginx_state }}
-  when: nginx_state != 'install'
+  when: nginx_state != 'install' and nginx_state != 'clear_sites'
 

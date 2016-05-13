@@ -1,4 +1,4 @@
-"""Python toolkit for building, managing releases and issue tracking"""
+"""Python toolkit for agile release managing, building and issue tracking"""
 from .version import get_version
 
 

@@ -7,6 +7,8 @@ command: 'install'
 #
 # Install npm?
 npm_install: true
+# Install repository with python setup.py?
+install_repo: false
 # requirement files to pip install
 requirement_files: ['requirements.txt']
 cookiename: ''

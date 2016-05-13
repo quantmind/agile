@@ -51,11 +51,13 @@
   shell: "{{ install_dir }}/venv/bin/python setup.py install"
   args:
     chdir: "{{ install_dir }}/repo"
+  when: install_repo
 
 - name: Remove repository {{ install_dir }}/repo
   file:
     path="{{ install_dir }}/repo"
     state=absent
+  when: install_repo
 
 - name: Create logrotate configuration.
   template:

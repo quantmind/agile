@@ -33,6 +33,7 @@ def requirements(name):
 
 meta = dict(
     version=agile.__version__,
+    description=agile.__doc__,
     name='pulsar-agile',
     author='Luca Sbardella',
     author_email="luca@quantmind.com",
@@ -52,7 +53,6 @@ meta = dict(
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Topic :: Utilities',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ]

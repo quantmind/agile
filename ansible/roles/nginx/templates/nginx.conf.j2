@@ -8,7 +8,7 @@ map $http_upgrade $connection_upgrade {
 {% include "ssl.redirect.conf.j2" with context %}
 
 server {
-{% if item.certificate %}
+{% if item.certificate | default(False) %}
 {% include "https.conf.j2" with context %}
 {% else %}
 {% include "http.conf.j2" with context %}
@@ -23,6 +23,10 @@ server {
     send_timeout 300s;
 
     proxy_http_version 1.1;
+
+{% if acme_challenge_path | default(False) %}
+{% include "acme-challenge.conf.j2" with context %}
+{% endif %}
 
 {% if item.host | default(False) %}
 {% include "proxypass.conf.j2" with context %}

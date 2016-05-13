@@ -1,0 +1,13 @@
+###
+#   Clear site-enabled directory
+#
+---
+- name: Remove {{ nginx_conf_dir }}/sites-enabled
+  file:
+    path="{{ nginx_conf_dir }}/sites-enabled"
+    state=absent
+
+- name: Create {{ nginx_conf_dir }}/sites-enabled directory
+  file:
+    path="{{ nginx_conf_dir }}/sites-enabled"
+    state=directory

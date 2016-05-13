@@ -1,0 +1,5 @@
+    location /.well-known/acme-challenge/ {
+        alias {{ acme_challenge_path }}/{{ item.domain }}/;
+        try_files $uri =404;
+    }
+
