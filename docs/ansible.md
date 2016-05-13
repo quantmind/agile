@@ -7,6 +7,11 @@ in the ``ansible.cfg`` file.
 [defaults]
 roles_path  = ../../git-agile/ansible/roles
 ```
+
+* [Common Role](#common-role)
+* [Lux Role](#lux-role)
+
+
 ## Common Role
 
 This role is required by all roles inlcluded in this library.
