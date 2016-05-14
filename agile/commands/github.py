@@ -52,7 +52,7 @@ class Github(utils.AgileApp):
             self.logger.debug('Releasing a python module')
             version = module_attribute(version)
         tag_prefix = opts.get('tag_prefix', '')
-        current_tag = await repo.validate_tag(version, tag_prefix) or {}
+        current_tag = await repo.validate_tag(version, tag_prefix)
         release['tag_name'] = version
         #
         # Release notes
@@ -113,10 +113,10 @@ class Github(utils.AgileApp):
                                      filename, tag)
                     await rel.upload(filename)
 
-    async def get_notes(self, repo, current_tag):
+    async def get_notes(self, repo, current):
         """Fetch release notes from github
         """
-        created_at = current_tag.data.get('created_at')
+        created_at = current.data.get('created_at') if current else None
         notes = []
         notes.extend(await self._from_commits(repo, created_at))
         notes.extend(await self._from_pull_requests(repo, created_at))

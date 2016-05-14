@@ -18,4 +18,5 @@ __pycache__
 build
 _build
 dist
+config.py
 *.egg-info
