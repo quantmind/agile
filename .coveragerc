@@ -1,5 +1,8 @@
 [run]
 source = agile
+omit =
+    *agile/version.py
+    *agile/__init__.py
 
 [report]
 # Regexes for lines to exclude from consideration

@@ -1,7 +1,7 @@
 import tests
 
 
-def test_function(app):
+def test_function(cmd):
     return 'OK'
 
 
