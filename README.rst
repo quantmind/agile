@@ -12,7 +12,7 @@
 .. |license| image:: https://img.shields.io/pypi/l/pulsar-agile.svg
   :target: https://pypi.python.org/pypi/pulsar-agile
 .. |status| image:: https://img.shields.io/pypi/status/pulsar-agile.svg
-  :target: https://pypi.python.org/pypi/v
+  :target: https://pypi.python.org/pypi/pulsar-agile
 .. |downloads| image:: https://img.shields.io/pypi/dd/pulsar-agile.svg
   :target: https://pypi.python.org/pypi/pulsar-agile
 .. |master-build| image:: https://travis-ci.org/quantmind/pulsar-agile.svg?branch=master
