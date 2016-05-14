@@ -55,11 +55,11 @@ class AgileApps(dict):
             if not cfg:
                 raise ImproperlyConfigured('No entry "%s" in %s' %
                                            (command, manager.cfg.config_file))
-            cfg = as_dict(cfg, '%s entry not valid' % entry)
+            cfg = app.as_dict(cfg, entry)
             await app(entry, cfg, options)
         else:
             for entry, cfg in config.items():
-                cfg = as_dict(cfg, '%s entry not valid' % entry)
+                cfg = app.as_dict(cfg, entry)
                 await app(entry, cfg, options)
             if start:
                 return app.start_server()
@@ -124,6 +124,9 @@ class AgileApp(metaclass=AgileMeta):
         if text:
             self.logger.debug(text, extra=dict(color=False))
         return text
+
+    def as_dict(self, cfg, entry):
+        return as_dict(cfg, '%s entry not valid' % entry)
 
 
 class AgileSetting(pulsar.Setting):

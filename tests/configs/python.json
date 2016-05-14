@@ -1,0 +1,10 @@
+{
+    "python": {
+        "test1": "tests.test_python:test_function"
+    },
+    "tasks": {
+        "test": {
+            "command": ["python:test1"]
+        }
+    }
+}
