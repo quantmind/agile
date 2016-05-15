@@ -14,48 +14,48 @@ class TestGithubApi(tests.GithubMix, tests.AgileTest):
         self.assertEqual(repo.client, self.github)
         self.assertEqual(repo.repo_path, tests.REPO)
 
+    # COMMITS
     async def test_commits(self):
         repo = self.repo
-        commits = await repo.commits()
+        commits = await repo.commits.get_list()
         self.assertTrue(commits)
         self.assertTrue(len(commits) <= 100)
         commit = commits[0]
-        self.assertEqual(commit.client, repo)
-        self.assertEqual(commit.id, commit['sha'])
-        self.assertTrue(commit.id in commit.api_url)
+        self.assertTrue(commit['sha'])
 
+    # RELEASES
     async def test_releases(self):
         repo = self.repo
-        releases = await repo.releases()
+        releases = await repo.releases.get_list()
         self.assertTrue(releases)
         self.assertTrue(len(releases) <= 100)
-        release = releases[0]
-        self.assertEqual(release.client, repo)
-        self.assertEqual(release.id, release['id'])
-        self.assertTrue(str(release.id) in release.api_url)
 
     async def test_latest_release(self):
         repo = self.repo
-        release = await repo.latest_release()
+        release = await repo.releases.latest()
         self.assertTrue(release)
-        self.assertEqual(release.id, release['id'])
+
+    async def test_release_by_tag(self):
+        repo = self.repo
+        release = await repo.releases.latest()
+        self.assertTrue(release)
+        bytag = await repo.releases.tag(release['tag_name'])
+        self.assertEqual(bytag['id'], release['id'])
 
     async def test_upload_file(self):
         repo = self.repo
-        release = await repo.latest_release()
-        assets = await release.assets(limit=0)
+        release = await repo.releases.latest()
+        assets = await repo.releases.release_assets(release)
         filename = os.path.basename(__file__)
         # Check if the filename is available
         for asset in assets:
             if asset['name'] == filename:
-                self.assertEqual(asset.api_url, asset['url'])
-                await asset.delete()
+                await repo.releases.assets.delete(asset)
                 await asyncio.sleep(1)
                 break
-        asset = await release.upload(__file__, 'text/plain')
+        asset = await repo.releases.upload(release, __file__, 'text/plain')
         self.assertTrue(asset)
-        self.assertTrue(asset.id)
-        self.assertEqual(asset.id, asset['id'])
+        self.assertTrue(asset['id'])
         self.assertEqual(asset['content_type'], 'text/plain')
         # Now delete the asset
-        await asset.delete()
+        await repo.releases.assets.delete(asset)

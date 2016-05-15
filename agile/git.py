@@ -1,9 +1,13 @@
+import logging
 from urllib.parse import urlsplit
 
 from pulsar import ImproperlyConfigured
 
 from .github import GithubApi
 from . import utils
+
+
+logger = logging.getLogger('agile.git')
 
 
 class Git:
@@ -97,6 +101,17 @@ class Git:
         if '[rejected]' in result:
             raise RuntimeError(result)
         return result
+
+    # Tags operations
+    async def tags_remove(self, tag):
+        try:
+            await utils.execute('git tag -d %s' % tag)
+        except utils.ShellError as exc:
+            logger.warning(str(exc))
+        try:
+            await utils.execute('git push origin :refs/tags/%s' % tag)
+        except utils.ShellError as exc:
+            logger.warning(str(exc))
 
 
 class Github(Git):

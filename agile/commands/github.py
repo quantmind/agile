@@ -11,6 +11,15 @@ from pulsar.utils.html import capfirst
 
 from .. import utils
 
+
+class RemoveRelease(utils.AgileSetting):
+    name = "remove_release"
+    flags = ['--remove-release']
+    nargs = "?"
+    const = 'current'
+    desc = "Remove a release from github"
+
+
 close_issue = set((
     'close',
     'closes',
@@ -36,6 +45,8 @@ class Github(utils.AgileApp):
     async def __call__(self, name, config, options):
         git = self.git
         gitapi = self.gitapi
+        release_notes_file = config.get('release_notes_file',
+                                        'release-notes.md')
         release = {}
         opts = dict(options)
         opts.update(config)
@@ -48,17 +59,24 @@ class Github(utils.AgileApp):
             raise utils.AgileError('"version" not specified in github.%s '
                                    'dictionary' % name)
         version = self.render(version)
+
         if opts.get('python_module'):
-            self.logger.debug('Releasing a python module')
             version = module_attribute(version)
+
+        if self.cfg.remove_release:
+            if self.cfg.remove_release != 'current':
+                version = self.cfg.remove_release
+            await self.remove_release(version)
+            return
+
         tag_prefix = opts.get('tag_prefix', '')
-        current_tag = await repo.validate_tag(version, tag_prefix)
+        current = await repo.releases.validate_tag(version, tag_prefix) or {}
         release['tag_name'] = version
         #
         # Release notes
         location = opts.get('release_notes')
         if location:
-            note_file = os.path.join(self.repo_path, "release-notes.md")
+            note_file = os.path.join(self.repo_path, release_notes_file)
             if os.path.isfile(note_file):
                 with open(note_file, 'r') as file:
                     release['body'] = file.read().strip()
@@ -66,7 +84,7 @@ class Github(utils.AgileApp):
             else:
                 self.logger.info('Create release notes from commits &'
                                  ' pull requests')
-                release['body'] = await self.get_notes(repo, current_tag)
+                release['body'] = await self.get_notes(repo, current)
                 with open(note_file, 'w') as file:
                     file.write(release['body'])
                 # Extit so that the release manager can edit the file
@@ -96,11 +114,20 @@ class Github(utils.AgileApp):
                 release = await repo.create_release(release)
                 self.logger.info('Congratulation, the new release %s is out',
                                  release['tag_name'])
-                #
-                # Perform post-release actions
-                # for action, value in dist.items():
-                #    key = '%s:%s:%s' % (self.command, name, action)
-                #    await getattr(self, action)(key, value, release=release)
+
+    async def remove_release(self, tag):
+        repo = self.gitapi.repo(self.git.repo_path)
+        self.logger.info('Remove release %s from github', tag)
+        try:
+            await repo.releases.delete(tag=tag)
+        except Exception as exc:
+            response = getattr(exc, 'response', None)
+            if response and response.status_code == 404:
+                self.logger.warning('Release with tag %s not available', tag)
+            else:
+                raise
+        # Remove tag
+        await self.git.tags_remove(tag)
 
     async def upload(self, name, src, release=None, **kw):
         if release:
@@ -116,7 +143,7 @@ class Github(utils.AgileApp):
     async def get_notes(self, repo, current):
         """Fetch release notes from github
         """
-        created_at = current.data.get('created_at') if current else None
+        created_at = current.get('created_at')
         notes = []
         notes.extend(await self._from_commits(repo, created_at))
         notes.extend(await self._from_pull_requests(repo, created_at))
@@ -221,7 +248,7 @@ class Github(utils.AgileApp):
         #
         # Collect notes from commits
         notes = []
-        for entry in await repo.commits(since=created_at):
+        for entry in await repo.commits.get_list(since=created_at):
             commit = entry['commit']
             dte = parser.parse(commit['committer']['date'])
             eid = entry['sha'][:7]
@@ -238,9 +265,10 @@ class Github(utils.AgileApp):
         # Collect notes from pull requests
         callback = check_update(created_at) if created_at else None
 
-        pulls = await repo.pulls(callback=callback,
-                                 state='closed', sort='updated',
-                                 direction='desc')
+        pulls = await repo.pulls.get_list(callback=callback,
+                                          state='closed',
+                                          sort='updated',
+                                          direction='desc')
         notes = []
         for entry in pulls:
             message = entry['body']

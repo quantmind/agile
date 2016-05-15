@@ -3,7 +3,9 @@
     "github": {
         "pythontest": {
             "python_module": "agile",
-            "version": "agile.__version__"
+            "version": "agile.__version__",
+            "release_notes": "tests/history",
+            "release_notes_file": "test_release_note.md"
         },
         "nodetest": {
             "version": "{{ tests.configs.release.version }}"

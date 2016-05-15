@@ -4,17 +4,20 @@ from unittest import skipUnless
 
 from pulsar import ImproperlyConfigured
 
-from agile.github import GithubApi, GitRepo
+from agile.github import GithubApi
+from agile.github.releases import Releases
 from agile.app import AgileManager
 from agile import utils
 
+EXECUTE_MOCKS = {}
 
 USERNAME = os.environ.get('GITHUB_USERNAME', '')
 TOKEN = os.environ.get('GITHUB_TOKEN', '')
 REPO = os.environ.get('GITHUB_TEST_REPO', '')
 
 original_semantic_version = utils.semantic_version
-original_validate_tag = GitRepo.validate_tag
+original_execute = utils.execute
+original_validate_tag = Releases.validate_tag
 
 
 def semantic_version(version):
@@ -30,13 +33,19 @@ async def validate_tag(self, tag_name, prefix=None):
         await original_validate_tag(self, tag_name, prefix)
     except ImproperlyConfigured:
         pass
-    current = await self.latest_release()
-    return current
+    return await self.latest()
 
+
+async def execute(command):
+    if command in EXECUTE_MOCKS:
+        return EXECUTE_MOCKS[command]
+    else:
+        return await original_execute(command)
 
 utils.semantic_version = semantic_version
+utils.execute = execute
 
-GitRepo.validate_tag = validate_tag
+Releases.validate_tag = validate_tag
 
 
 class AgileTest(unittest.TestCase):
