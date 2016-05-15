@@ -5,8 +5,6 @@ from .. import utils
 
 
 class Python(utils.AgileApp):
-    """Run shell commands
-    """
     description = 'Run a python function from the same application domain'
 
     async def __call__(self, name, config, options):

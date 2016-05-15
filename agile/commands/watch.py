@@ -10,10 +10,7 @@ _win = (sys.platform == "win32")
 
 
 class Watch(utils.AgileApp, utils.TaskExecutor):
-    """Run shell commands
-    """
-    description = ('Watch for changes on file system and execute commands '
-                   'on the shell')
+    description = 'Watch for changes on file system and execute tasks'
     watching = None
 
     async def __call__(self, name, config, options):

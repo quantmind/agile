@@ -108,13 +108,17 @@ class AgileApp(metaclass=AgileMeta):
         """
         pass
 
-    async def shell(self, name, coms, **kw):
+    async def shell(self, command=None, chdir=None, **kw):
         """Execute a list of shell commands
+
+        :param commands: list or string of shell commands
         """
         results = []
-        for com in as_list(coms, 'shell commands should be a list'):
+        for com in as_list(command, 'shell commands should be a list'):
             com = self.render(com)
-            self.logger.info('executing shell:%s - %s', name, com)
+            self.logger.info('executing shell:%s', com)
+            if chdir:
+                com = 'cd %s && %s' % (chdir, com)
             text = self.log_execute(await execute(com))
             if text:
                 results.append(text)

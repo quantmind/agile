@@ -111,7 +111,7 @@ class Github(utils.AgileApp):
                 self.logger.info('Push changes')
                 self.log_execute(await git.push())
                 self.logger.info('Creating a new tag %s', version)
-                release = await repo.create_release(release)
+                release = await repo.releases.create(release)
                 self.logger.info('Congratulation, the new release %s is out',
                                  release['tag_name'])
 

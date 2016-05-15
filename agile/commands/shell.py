@@ -7,6 +7,6 @@ class Shell(utils.AgileApp):
     description = 'Run arbitrary commands on the shell'
 
     async def __call__(self, name, config, options):
-        results = await self.shell(name, config.get('command'))
+        results = await self.shell(**config)
         if results:
             self.context[name] = results if len(results) > 1 else results[0]
