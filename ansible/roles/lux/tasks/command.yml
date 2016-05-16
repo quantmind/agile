@@ -16,8 +16,6 @@
   include: clean.yml
   when: command == 'clean'
 
-- name: Execute {{ command }} with {{ service_latest_script }}
-  command:
-    '{{ service_latest_script }} {{ item }} {{ command }}'
+- name: Include other command script
+  include: other.yml
   when: command != 'create_superuser' and command != 'deploy' and command != 'clean'
-  with_items: "{{ lux_services }}"

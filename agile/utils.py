@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import asyncio
 import logging
@@ -7,6 +8,7 @@ from collections import Mapping, OrderedDict
 
 import pulsar
 from pulsar import ImproperlyConfigured
+from pulsar.utils.string import to_bytes
 
 from jinja2 import Template
 
@@ -108,7 +110,7 @@ class AgileApp(metaclass=AgileMeta):
         """
         pass
 
-    async def shell(self, command=None, chdir=None, **kw):
+    async def shell(self, command=None, **kw):
         """Execute a list of shell commands
 
         :param commands: list or string of shell commands
@@ -116,10 +118,8 @@ class AgileApp(metaclass=AgileMeta):
         results = []
         for com in as_list(command, 'shell commands should be a list'):
             com = self.render(com)
-            self.logger.info('executing shell:%s', com)
-            if chdir:
-                com = 'cd %s && %s' % (chdir, com)
-            text = self.log_execute(await execute(com))
+            self.logger.info('executing shell: %s', com)
+            text = self.log_execute(await execute(com, **kw))
             if text:
                 results.append(text)
         return results
@@ -139,20 +139,50 @@ class AgileSetting(pulsar.Setting):
     section = "Git Agile"
 
 
-async def execute(command):
+async def execute(command, input=None, chdir=None, interactive=False,
+                  stderr=None, stdout=None, **kw):
     """Execute a shell command
-    :param args: a given number of command parameters
+    :param command: command to execute
+    :param input: optional input
+    :param chdir: optional directory to execute the shell command from
+    :param  interactive: display output as it becomes available
     :return: the output text
     """
+    stdin = asyncio.subprocess.PIPE if input else None
+    if chdir:
+        command = 'cd %s && %s' % (chdir, command)
+
     proc = await asyncio.create_subprocess_shell(
-        command, stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.STDOUT)
-    await proc.wait()
-    msg = await proc.stdout.read()
-    msg = msg.decode('utf-8').strip()
+        command,
+        stdin=stdin,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
+    if input:
+        proc._feed_stdin(to_bytes(input))
+
+    msg, err = await asyncio.gather(
+        interact(proc, 1, interactive, stdout or sys.stdout),
+        interact(proc, 2, interactive, stderr or sys.stderr)
+    )
     if proc.returncode:
-        raise ShellError(msg, proc.returncode)
-    return msg
+        raise ShellError(err.decode('utf-8').strip(), proc.returncode)
+    return msg.decode('utf-8').strip()
+
+
+async def interact(proc, fd, interactive, out):
+    transport = proc._transport.get_pipe_transport(fd)
+    stream = proc.stdout if fd == 1 else proc.stderr
+    output = b''
+    while interactive:
+        line = await stream.readline()
+        if not line:
+            break
+        out.write(line.decode('utf-8'))
+    else:
+        output = await stream.read()
+    transport.close()
+    return output
 
 
 def passthrough(manager, version):

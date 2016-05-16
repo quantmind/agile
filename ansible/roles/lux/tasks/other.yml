@@ -1,0 +1,11 @@
+---
+- name: Execute {{ command }} with {{ service_latest_script }}
+  command:
+    '{{ service_latest_script }} {{ item }} {{ command }}'
+  register: command_results
+  with_items: "{{ lux_services }}"
+
+- name: Display {{ command }} results
+  debug:
+    msg: "{{ item.item }}"
+  with_items: "{{ command_results.results }}"

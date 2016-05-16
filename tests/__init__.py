@@ -36,11 +36,11 @@ async def validate_tag(self, tag_name, prefix=None):
     return await self.latest()
 
 
-async def execute(command):
+async def execute(command, **kw):
     if command in EXECUTE_MOCKS:
         return EXECUTE_MOCKS[command]
     else:
-        return await original_execute(command)
+        return await original_execute(command, **kw)
 
 utils.semantic_version = semantic_version
 utils.execute = execute
