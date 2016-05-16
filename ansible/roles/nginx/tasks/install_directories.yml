@@ -4,7 +4,14 @@
 ---
 - name: Make sure certificate directories are available
   file:
-    path="{{ server_crt_dir }}/{{ item.domain }}"
+    path="{{ server_crt_dir }}/{{ item.filename | default(item.domain) }}"
     state=directory
   with_items: "{{ services }}"
   when: item.certificate is defined and item.domain is defined
+
+- name: Make sure acme directories are available
+  file:
+    path="{{ acme_challenge_path }}/{{ item.filename | default(item.domain) }}"
+    state=directory
+  with_items: "{{ services }}"
+  when: acme_challenge_path != false and item.domain is defined

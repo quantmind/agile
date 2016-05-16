@@ -5,7 +5,9 @@ map $http_upgrade $connection_upgrade {
 }
 {% endif %}
 
+{% if item.certificate | default(False) %}
 {% include "ssl.redirect.conf.j2" with context %}
+{% endif %}
 
 server {
 {% if item.certificate | default(False) %}

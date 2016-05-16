@@ -7,5 +7,5 @@
 
 - name: Display {{ command }} results
   debug:
-    msg: "{{ item.item }}"
+    msg: "{{ item.stdout_lines }}"
   with_items: "{{ command_results.results }}"

@@ -1,7 +1,18 @@
-{% if item.certificate | default(False) %}
 server {
     listen 80;
     server_name {{ item.domain }};
-    return 301 https://{{ item.domain }}$request_uri;
+    return 301 https://$host$request_uri;
 }
+
+{% if item.redirects | default(False) %}
+{% for redirect in item.redirects %}
+server {
+    listen 443 ssl spdy;
+    ssl on;
+    ssl_certificate {{ server_crt_dir }}/{{ redirect.filename | default(redirect.from) }}/server.crt;
+    ssl_certificate_key {{ server_crt_dir }}/{{ redirect.filename | default(redirect.from) }}/server.key;
+    server_name {{ redirect.from }};
+    return 301 https://{{ redirect.to }}$request_uri;
+}
+{% endfor %}
 {% endif %}

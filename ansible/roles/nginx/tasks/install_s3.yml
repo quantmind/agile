@@ -5,7 +5,7 @@
   s3:
     bucket="{{ certificate_bucket }}"
     object="{{ item.certificate }}.crt"
-    dest="{{ server_crt_dir }}/{{ item.domain }}/server.crt"
+    dest="{{ server_crt_dir }}/{{ item.filename | default(item.domain) }}/server.crt"
     mode=get
   with_items: "{{ services }}"
   when: item.certificate is defined and item.domain is defined
@@ -14,7 +14,7 @@
   s3:
     bucket="{{ certificate_bucket }}"
     object="{{ item.certificate }}.key"
-    dest="{{ server_crt_dir }}/{{ item.domain }}/server.key.enc"
+    dest="{{ server_crt_dir }}/{{ item.filename | default(item.domain) }}/server.key.enc"
     mode=get
   with_items: "{{ services }}"
   when: item.certificate is defined and item.domain is defined
@@ -24,7 +24,7 @@
   s3:
     bucket="{{ certificate_bucket }}"
     object="{{ item.certificate }}.dhparams"
-    dest="{{ server_crt_dir }}/{{ item.domain }}/server.dhparams"
+    dest="{{ server_crt_dir }}/{{ item.filename | default(item.domain) }}/server.dhparams"
     mode=get
   with_items: "{{ services }}"
   when: item.certificate is defined and item.domain is defined

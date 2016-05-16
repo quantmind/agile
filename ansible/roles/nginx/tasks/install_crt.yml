@@ -4,30 +4,30 @@
 - name: strip ssl keys
   command: >
     openssl rsa
-    -in "{{ server_crt_dir }}/{{ item.domain }}/server.key.enc"
-    -out "{{ server_crt_dir }}/{{ item.domain }}/server.key"
+    -in "{{ server_crt_dir }}/{{ item.filename | default(item.domain) }}/server.key.enc"
+    -out "{{ server_crt_dir }}/{{ item.filename | default(item.domain) }}/server.key"
     -passin pass:{{ ssl_passphrase }}
-    creates="{{ server_crt_dir }}/{{ item.domain }}/server.key"
+    creates="{{ server_crt_dir }}/{{ item.filename | default(item.domain) }}/server.key"
   with_items: "{{ services }}"
   when: item.certificate is defined and item.domain is defined
 
 - name: remove secure certificate keys
   file:
-    path="{{ server_crt_dir }}/{{ item.domain }}/server.key.enc"
+    path="{{ server_crt_dir }}/{{ item.filename | default(item.domain) }}/server.key.enc"
     state=absent
   with_items: "{{ services }}"
   when: item.certificate is defined and item.domain is defined
 
 - name: Check certificate md5
   shell:
-    openssl x509 -noout -modulus -in {{ server_crt_dir }}/{{ item.domain }}/server.crt| openssl md5;
+    openssl x509 -noout -modulus -in {{ server_crt_dir }}/{{ item.filename | default(item.domain) }}/server.crt| openssl md5;
   register: "md5_crt"
   with_items: "{{ services }}"
   when: item.certificate is defined and item.domain is defined
 
 - name: Check key md5
   shell:
-    openssl rsa -noout -modulus -in {{ server_crt_dir }}/{{ item.domain }}/server.key| openssl md5;
+    openssl rsa -noout -modulus -in {{ server_crt_dir }}/{{ item.filename | default(item.domain) }}/server.key| openssl md5;
   register: "md5_key"
   with_items: "{{ services }}"
   when: item.certificate is defined and item.domain is defined

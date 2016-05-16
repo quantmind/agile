@@ -3,6 +3,7 @@
 import os
 from datetime import date
 import glob
+import asyncio
 
 from dateutil import parser
 
@@ -110,6 +111,8 @@ class Github(utils.AgileApp):
             if self.cfg.push:
                 self.logger.info('Push changes')
                 self.log_execute(await git.push())
+                self.logger.info('Pause for two second before creating a tag')
+                await asyncio.sleep(2)
                 self.logger.info('Creating a new tag %s', version)
                 release = await repo.releases.create(release)
                 self.logger.info('Congratulation, the new release %s is out',
