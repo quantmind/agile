@@ -258,7 +258,7 @@ class Github(utils.AgileApp):
             message = commit['message']
             await self.add_note(repo, notes, message, dte, eid, entry)
             if commit['comment_count']:
-                for comment in await entry.comments():
+                for comment in await repo.commits.comments(entry):
                     message = comment['body']
                     await self.add_note(repo, notes, message, dte, eid, entry)
         return notes

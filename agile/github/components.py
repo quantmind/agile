@@ -69,7 +69,7 @@ class RepoComponents(Component):
         if limit:
             data['per_page'] = min(limit, 100)
         while url:
-            response = await self.http.get(url, json=data, auth=self.auth)
+            response = await self.http.get(url, params=data, auth=self.auth)
             response.raise_for_status()
             result = response.json()
             n = m = len(result)
@@ -106,6 +106,12 @@ class Commits(RepoComponents):
     @classmethod
     def id_from_data(cls, data):
         return data['sha']
+
+    def comments(self, commit):
+        """Fetch comments for a given commit
+        """
+        commit = self.as_id(commit)
+        return self.get_list(url='%s/%s/comments' % (self, commit))
 
 
 class Issues(RepoComponents):
