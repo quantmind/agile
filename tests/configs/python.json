@@ -1,10 +1,20 @@
 {
+    "vars": {
+        "random": 50
+    },
     "python": {
-        "test1": "tests.test_python:test_function"
+        "test1": "tests.test_python:test_function",
+        "agile_version": "agile.__version__"
     },
     "tasks": {
         "test": {
             "command": ["python:test1"]
+        },
+        "version": {
+            "command": ["python:agile_version"]
+        },
+        "variables": {
+            "command": "vars"
         }
     }
 }

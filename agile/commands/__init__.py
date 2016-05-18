@@ -7,3 +7,4 @@ from . import shell     # noqa
 from . import s3        # noqa
 from . import watch     # noqa
 from . import python    # noqa
+from . import vars      # noqa

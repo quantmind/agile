@@ -1,7 +1,5 @@
 ## Contents
 
-* [release](./release.html)
-* [docs](./docs.html)
-* [labels](./labels.html)
+* [agile](./release.html)
 * [ansible](./ansible.html)
 * [changelog](./changelog.html)

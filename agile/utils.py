@@ -21,6 +21,10 @@ class AgileExit(AgileError):
     pass
 
 
+class AgileSkip(AgileError):
+    pass
+
+
 class ShellError(AgileError):
 
     def __init__(self, msg, code):
@@ -130,7 +134,10 @@ class AgileApp(metaclass=AgileMeta):
         return text
 
     def as_dict(self, cfg, entry):
-        return as_dict(cfg, '%s entry not valid' % entry)
+        result = {}
+        for key, value in as_dict(cfg, '%s entry not valid' % entry).items():
+            result[key] = self.render(value)
+        return result
 
 
 class AgileSetting(pulsar.Setting):
@@ -148,7 +155,7 @@ async def execute(command, input=None, chdir=None, interactive=False,
     :param  interactive: display output as it becomes available
     :return: the output text
     """
-    stdin = asyncio.subprocess.PIPE if input else None
+    stdin = asyncio.subprocess.PIPE if input is not None else None
     if chdir:
         command = 'cd %s && %s' % (chdir, command)
 
@@ -158,7 +165,7 @@ async def execute(command, input=None, chdir=None, interactive=False,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE
     )
-    if input:
+    if input is not None:
         proc._feed_stdin(to_bytes(input))
 
     msg, err = await asyncio.gather(
@@ -298,17 +305,38 @@ class TaskCommand:
                                  (self.task, task_description(self.info)))
         started = False
         for command in self.commands:
+            extra = None
+
+            if isinstance(command, Mapping):
+                extra = command
+                command = extra.pop('command', None)
+
+            if not command:
+                raise ImproperlyConfigured('command not defined')
+
             if command in self.running:
                 raise ImproperlyConfigured('command already running')
 
-            if command in self.all_tasks:
-                # the command is another task
-                command = TaskCommand(self.manager, command, self.running)
-                st = await command(start_server)
-            else:
-                st = await agile_apps(self.manager, command, start_server)
-            started = started or st
+            try:
+                self.check_conditions(extra)
+
+                if command in self.all_tasks:
+                    # the command is another task
+                    command = TaskCommand(self.manager, command, self.running)
+                    st = await command(start_server)
+                else:
+                    st = await agile_apps(self.manager, command, start_server)
+                started = started or st
+            except AgileSkip:
+                self.manager.logger.info('Skip command %s', command)
         return started
+
+    def check_conditions(self, extra):
+        if not extra:
+            return
+
+        if 'when' in extra and not self.manager.eval(extra['when']):
+            raise AgileSkip
 
 
 def load_json(filename):

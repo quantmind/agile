@@ -1,9 +1,10 @@
 {
-    "version": "1.2.3",
+    "python": {
+        "agile_version": "agile.__version__"
+    },
     "github": {
         "pythontest": {
-            "python_module": "agile",
-            "version": "agile.__version__",
+            "version": "{{ agile_version }}",
             "release_notes": "tests/history",
             "release_notes_file": "test_release_note.md"
         },
@@ -11,11 +12,25 @@
             "version": "{{ tests.configs.release.version }}"
         }
     },
+    "s3": {
+        "upload": {
+            "files": {}
+        }
+    },
     "tasks": {
         "badtask": ["pythontest"],
         "releasepy": {
             "command": [
+                "python",
                 "github:pythontest"
+            ]
+        },
+        "upload": {
+            "command": [
+                {
+                    "command": "s3:upload",
+                    "when": "cfg.push"
+                }
             ]
         }
     }

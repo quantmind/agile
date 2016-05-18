@@ -1,8 +1,9 @@
 from pulsar.utils.log import LOGGING_CONFIG as logconfig
 
 redis_server = 'redis://{{ redis_host }}:{{ redis_port }}'
-CACHE_SERVER = '%s/3' % redis_server
-PUBSUB_STORE = data_store = '%s/4' % redis_server
+SESSION_BACKEND = '%s/3' % redis_server
+CACHE_SERVER = '%s/4' % redis_server
+PUBSUB_STORE = data_store = '%s/5' % redis_server
 
 {% if cookiename %}
 SESSION_COOKIE_NAME = '{{ cookiename }}'

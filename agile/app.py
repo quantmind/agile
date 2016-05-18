@@ -4,6 +4,7 @@ import logging
 
 import pulsar
 from pulsar import ensure_future, ImproperlyConfigured, validate_list
+from pulsar.utils.log import lazyproperty
 
 from .git import Git
 from . import utils
@@ -11,7 +12,7 @@ from . import commands      # noqa
 
 
 exclude = set(pulsar.Config().settings)
-exclude.difference_update(('config', 'loglevel', 'loghandlers', 'debug'))
+exclude.difference_update(('config', 'log_level', 'log_handlers', 'debug'))
 
 
 class Tasks(utils.AgileSetting):
@@ -87,6 +88,13 @@ class AgileManager(pulsar.Application, utils.TaskExecutor):
     def http(self):
         return self.gitapi.http if self.gitapi else None
 
+    @lazyproperty
+    def context(self):
+        return {
+            'cfg': self.cfg,
+            'python': sys.executable
+        }
+
     def monitor_start(self, monitor, exc=None):
         cfg = self.cfg
         cfg.set('workers', 0)
@@ -96,14 +104,25 @@ class AgileManager(pulsar.Application, utils.TaskExecutor):
             ensure_future(self._agile(worker))
 
     def render(self, text):
-        context = self.context
-        return utils.render(text, context) if context else text
+        """Render text if a string
+        """
+        if isinstance(text, list):
+            return [self.render(v) for v in text]
+        if isinstance(text, str) and '{{' in text and '}}' in text:
+            return utils.render(text, self.context)
+        else:
+            return text
+
+    def eval(self, text):
+        try:
+            return eval(text, {}, self.context)
+        except Exception:
+            raise utils.AgileError('Could not eval: "%s"' % text) from None
 
     async def agile(self):
         """ Execute a set of tasks against a configuration file
         """
         self.logger = logging.getLogger('agile')
-        self.context = {'python': sys.executable}
         self.git = await Git.create()
         self.gitapi = self.cfg.get('gitapi', self.git.api())
         self.repo_path = await self.git.toplevel()

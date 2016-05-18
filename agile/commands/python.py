@@ -11,8 +11,9 @@ class Python(utils.AgileApp):
         function = config.get('function')
         if not function:
             raise utils.AgileError('function path not specified')
-        func = module_attribute(function)
-        result = await as_coroutine(func(self))
+        result = module_attribute(function)
+        if hasattr(result, '__call__'):
+            result = await as_coroutine(result(self))
         if result:
             self.context[name] = result
 

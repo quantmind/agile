@@ -7,7 +7,6 @@ import asyncio
 
 from dateutil import parser
 
-from pulsar.utils.importer import module_attribute
 from pulsar.utils.html import capfirst
 
 from .. import utils
@@ -60,9 +59,6 @@ class Github(utils.AgileApp):
             raise utils.AgileError('"version" not specified in github.%s '
                                    'dictionary' % name)
         version = self.render(version)
-
-        if opts.get('python_module'):
-            version = module_attribute(version)
 
         if self.cfg.remove_release:
             if self.cfg.remove_release != 'current':
