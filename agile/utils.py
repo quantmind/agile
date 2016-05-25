@@ -173,7 +173,8 @@ async def execute(command, input=None, chdir=None, interactive=False,
         interact(proc, 2, interactive, stderr or sys.stderr)
     )
     if proc.returncode:
-        raise ShellError(err.decode('utf-8').strip(), proc.returncode)
+        msg = '%s%s' % (msg.decode('utf-8'), err.decode('utf-8'))
+        raise ShellError(msg.strip(), proc.returncode)
     return msg.decode('utf-8').strip()
 
 

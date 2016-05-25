@@ -116,17 +116,20 @@ class Commits(RepoComponents):
 
 class Issues(RepoComponents):
 
-    def comments(self, commit):
-        """Return all comments for this commit
+    @classmethod
+    def id_from_data(cls, data):
+        return data['number']
+
+    def comments(self, issue):
+        """Return all comments for this issue/pull request
         """
-        if isinstance(commit, dict):
-            commit = self.id_from_data(commit)
-        return Comments(self, commit)
+        commit = self.as_id(issue)
+        return self.get_list(url='%s/%s/comments' % (self, commit))
 
 
 class Comments(RepoComponentsId):
     pass
 
 
-class Pulls(RepoComponents):
+class Pulls(Issues):
     pass

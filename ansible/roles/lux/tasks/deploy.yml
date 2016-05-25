@@ -21,9 +21,10 @@
 
 - name: Stop servers
   command:
-    "{{ service_script }} {{ item }} stop"
+    "{{ service_running_script }} {{ item }} stop"
   with_items: "{{ lux_services }}"
   when: check_service_running_path.stat.exists
+  ignore_errors: yes
 
 - name: Symlink to RUNNING path {{ service_latest_path_version.stdout }} to {{ service_running_path }}
   file:
@@ -31,7 +32,7 @@
     path="{{ service_running_path }}"
     state=link
 
-- name: Start servers with {{ service_script }}
+- name: Start servers with {{ service_running_script }}
   command:
-    "{{ service_script }} {{ item }} serve"
+    "{{ service_running_script }} {{ item }} serve"
   with_items: "{{ lux_services }}"

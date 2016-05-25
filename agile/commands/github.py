@@ -274,8 +274,8 @@ class Github(utils.AgileApp):
             dte = parser.parse(entry['closed_at'])
             eid = '#%d' % entry['number']
             await self.add_note(repo, notes, message, dte, eid, entry)
-            pull = repo.issue(entry['number'])
-            for comment in await pull.comments():
+            comments = await repo.issues.comments(entry)
+            for comment in comments:
                 message = comment['body']
                 await self.add_note(repo, notes, message, dte, eid, entry)
         return notes

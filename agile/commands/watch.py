@@ -1,7 +1,8 @@
 import os
 import sys
-import glob
 from asyncio import ensure_future
+
+import glob2 as glob
 
 from .. import utils
 
@@ -38,9 +39,9 @@ class Watch(utils.AgileApp, utils.TaskExecutor):
     async def check(self, files, tasks):
         filename = self.changed(files)
         if filename:
-            self.logger.info('Changes in "%s"', filename)
+            self.logger.warning('CHANGES in "%s"', filename)
             await self.execute_tasks(tasks)
-            self.logger.info('Finished with "%s" changes', filename)
+            self.logger.info('FINISHED with "%s" changes', filename)
 
     def changed(self, files):
         for src in files:
