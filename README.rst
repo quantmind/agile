@@ -1,4 +1,4 @@
-:Badges: |license|  |pyversions| |status| |downloads|
+:Badges: |license|  |pyversions| |status|
 :Master CI: |master-build| |coverage-master|
 :Downloads: http://pypi.python.org/pypi/pulsar-agile
 :Source: https://github.com/quantmind/pulsar-agile
