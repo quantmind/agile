@@ -2,27 +2,27 @@ import os
 import asyncio
 import glob
 
-from .. import utils
+from .. import core
 
 
-class S3(utils.AgileApp):
+class S3(core.AgileCommand):
     description = 'Upload files to S3'
 
     async def __call__(self, name, config, options):
         try:
             from cloud import aws
         except ImportError:
-            raise utils.ImproperlyConfigured(
-                'S3 command requires pulsar-cloud, install with pip')
+            raise self.error(
+                'S3 command requires pulsar-cloud, install it with pip')
         opts = dict(options)
         opts.update(config)
 
-        files = utils.as_dict(opts.pop('files', None),
-                              'No files given, must be a dictionary')
+        files = self.as_dict(opts.pop('files', None),
+                             'No files given, must be a dictionary')
         bucket = opts.pop('bucket', None)
         if not bucket:
-            raise utils.AgileError('No bucket entry found.'
-                                   'Specify it in the s3.options dictionary')
+            raise self.error('No bucket entry found. '
+                             'Specify it in the s3.options dictionary')
         s3 = aws.AsyncioBotocore('s3', http_session=self.gitapi.http,
                                  **opts)
         requests = []
@@ -30,7 +30,7 @@ class S3(utils.AgileApp):
             src = self.render(src)
             target = self.render(target)
             if not target.endswith('/'):
-                raise utils.AgileError('s3 targets should end with a slash /')
+                raise self.error('s3 targets should end with a slash /')
 
             if os.path.isdir(src):
                 requests.append(s3.upload_folder(bucket, src, target))

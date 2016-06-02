@@ -4,19 +4,19 @@ from asyncio import ensure_future
 
 import glob2 as glob
 
-from .. import utils
+from .. import core
 
 
 _win = (sys.platform == "win32")
 
 
-class Watch(utils.AgileApp, utils.TaskExecutor):
+class Watch(core.AgileCommand, core.TaskExecutor):
     description = 'Watch for changes on file system and execute tasks'
     watching = None
 
     async def __call__(self, name, config, options):
-        files = utils.as_list(config.get('files'), 'files entry not valid')
-        tasks = utils.as_list(config.get('command'), 'command entry not valid')
+        files = self.as_list(config.get('files'), 'files entry not valid')
+        tasks = self.as_list(config.get('command'), 'command entry not valid')
         if self.watching is None:
             self.all_files = {}
             self.watching = []

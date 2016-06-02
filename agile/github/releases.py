@@ -4,7 +4,6 @@ import mimetypes
 from urllib.parse import urlsplit
 
 from pulsar.utils.httpurl import iri_to_uri
-from pulsar import ImproperlyConfigured
 
 from .components import RepoComponents
 from .. import utils
@@ -99,12 +98,12 @@ class Releases(RepoComponents):
             tag_name = utils.semantic_version(tag_name)
             if tag_name >= new_version:
                 what = 'equal to' if tag_name == new_version else 'older than'
-                raise ImproperlyConfigured('Your local version "%s" is %s '
-                                           'the current github version "%s".\n'
-                                           'Bump the local version to '
-                                           'continue.' %
-                                           (str(new_version), what,
-                                            str(tag_name)))
+                raise utils.AgileError('Your local version "%s" is %s '
+                                       'the current github version "%s".\n'
+                                       'Bump the local version to '
+                                       'continue.' %
+                                       (str(new_version), what,
+                                        str(tag_name)))
         return current
 
 

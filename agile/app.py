@@ -1,13 +1,7 @@
-import os
-import sys
-import logging
-
 import pulsar
-from pulsar import ensure_future, ImproperlyConfigured, validate_list
-from pulsar.utils.log import lazyproperty
+from pulsar import validate_list, ensure_future
 
-from .git import Git
-from . import utils
+from . import core
 from . import commands      # noqa
 
 
@@ -15,7 +9,7 @@ exclude = set(pulsar.Config().settings)
 exclude.difference_update(('config', 'log_level', 'log_handlers', 'debug'))
 
 
-class Tasks(utils.AgileSetting):
+class Tasks(core.AgileSetting):
     name = 'tasks'
     nargs = '*'
     validator = validate_list
@@ -23,7 +17,7 @@ class Tasks(utils.AgileSetting):
     desc = "tasks to run - For the list of tasks pass -l or --list-tasks"
 
 
-class ConfigFile(utils.AgileSetting):
+class ConfigFile(core.AgileSetting):
     name = "config_file"
     flags = ["--config-file"]
     default = "agile.json"
@@ -32,7 +26,7 @@ class ConfigFile(utils.AgileSetting):
         """
 
 
-class ListTasks(utils.AgileSetting):
+class ListTasks(core.AgileSetting):
     name = "list_tasks"
     flags = ['-l', '--list-tasks']
     action = "store_true"
@@ -42,7 +36,7 @@ class ListTasks(utils.AgileSetting):
         """
 
 
-class Force(utils.AgileSetting):
+class Force(core.AgileSetting):
     name = "force"
     flags = ['--force']
     action = "store_true"
@@ -50,7 +44,7 @@ class Force(utils.AgileSetting):
     desc = "Force execution when errors occur"
 
 
-class Commit(utils.AgileSetting):
+class Commit(core.AgileSetting):
     name = "commit"
     flags = ['--commit']
     action = "store_true"
@@ -58,7 +52,7 @@ class Commit(utils.AgileSetting):
     desc = "Commit changes to git"
 
 
-class Push(utils.AgileSetting):
+class Push(core.AgileSetting):
     name = "push"
     flags = ['--push']
     action = "store_true"
@@ -66,14 +60,13 @@ class Push(utils.AgileSetting):
     desc = "Push changes to origin"
 
 
-class AgileManager(pulsar.Application, utils.TaskExecutor):
+class AgileManager(pulsar.Application, core.TaskExecutor):
     name = 'agile'
     cfg = pulsar.Config(apps=['agile'],
                         log_level=['pulsar.error', 'info'],
                         log_handlers=['console_name_level_message'],
                         description='Agile release manager',
                         exclude=exclude)
-    git = None
     gitapi = None
     config = None
     note_file = None
@@ -84,105 +77,20 @@ class AgileManager(pulsar.Application, utils.TaskExecutor):
     releases_path = None
     """Path to the location of release configuration files
     """
-    @property
-    def http(self):
-        return self.gitapi.http if self.gitapi else None
-
-    @lazyproperty
-    def context(self):
-        return {
-            'cfg': self.cfg,
-            'python': sys.executable
-        }
-
     def monitor_start(self, monitor, exc=None):
-        cfg = self.cfg
-        cfg.set('workers', 0)
+        self.cfg.set('workers', 0)
 
-    def worker_start(self, worker, exc=None):
+    async def worker_start(self, worker, exc=None):
         if not exc:
-            ensure_future(self._agile(worker))
+            executor = await self.executor(loop=worker._loop)
+            if executor.cfg.list_tasks:
+                executor.list_tasks()
+            else:
+                fut = ensure_future(executor(), loop=worker._loop)
+                fut.add_done_callback(self._exit)
 
-    def render(self, text):
-        """Render text if a string
-        """
-        if isinstance(text, list):
-            return [self.render(v) for v in text]
-        if isinstance(text, str) and '{{' in text and '}}' in text:
-            return utils.render(text, self.context)
-        else:
-            return text
+    def executor(self, **kw):
+        return core.TaskExecutor.create(self.cfg, **kw)
 
-    def eval(self, text):
-        try:
-            return eval(text, {}, self.context)
-        except Exception:
-            raise utils.AgileError('Could not eval: "%s"' % text) from None
-
-    async def agile(self):
-        """ Execute a set of tasks against a configuration file
-        """
-        self.logger = logging.getLogger('agile')
-        self.git = await Git.create()
-        self.gitapi = self.cfg.get('gitapi', self.git.api())
-        self.repo_path = await self.git.toplevel()
-        self.context['repo_path'] = self.repo_path
-        self.logger.debug('Repository directory %s', self.repo_path)
-        self.config = self._load_json()
-        if self.cfg.list_tasks:
-            self._list_tasks()
-        else:
-            tasks = tuple(self.cfg.tasks or self.config['tasks'])
-            return await self.execute_tasks(tasks, True)
-
-    async def _agile(self, worker):   # pragma    nocover
-        exit_code = 1
-        started = False
-        try:
-            started = await self.agile()
-        except utils.AgileExit as exc:
-            self.logger.error(str(exc))
-        except (ImproperlyConfigured, utils.AgileError) as exc:
-            self.logger.error(str(exc))
-            self.logger.info('Execution stopped. '
-                             'Pass --force to force executions on errors')
-        except Exception as exc:
-            self.logger.exception(str(exc))
-            exit_code = 2
-        else:
-            exit_code = 0
-        if not started:
-            if self.gitapi:
-                await self.gitapi.http.close()
-            worker._loop.call_soon(self._exit, exit_code)
-
-    def _list_tasks(self):
-        tasks = self.config.get('tasks')
-        if not tasks:
-            raise utils.AgileExit('No "tasks" entry in your %s file' %
-                                  self.cfg.config_file)
-        print('')
-        print('==========================================')
-        print('There are %d tasks available' % len(tasks))
-        print('==========================================')
-        print('')
-        for name, task in tasks.items():
-            task = utils.as_dict(
-                task, 'tasks should be a dictionary of dictionaries')
-            print('%s: %s' % (name, utils.task_description(task)))
-        print('')
-        print('==========================================')
-
-    def _exit(self, exit_code):
-        pulsar.arbiter().stop(exit_code=exit_code)
-
-    def _load_json(self):
-        for filename in os.listdir(self.repo_path):
-            if not utils.skipfile(filename) and filename.endswith('.json'):
-                entry = utils.config_entry(filename)
-                self.context[entry] = utils.load_json(filename)
-        config_file = self.cfg.config_file
-        entry = utils.config_entry(config_file)
-        if entry not in self.context:
-            self.context[entry] = utils.load_json(config_file)
-        return self.context.get(entry)
+    def _exit(self, fut):
+        pulsar.arbiter().stop(exit_code=fut.result())

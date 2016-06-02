@@ -17,6 +17,22 @@
             "files": {}
         }
     },
+    "httpcopy": {
+        "bootswatch": {
+            "src": [
+                "https://bootswatch.com/{{ item }}/_bootswatch.scss",
+                "https://bootswatch.com/{{ item }}/_variables.scss"
+            ],
+            "target": "{{ tmp }}/{{ item }}/",
+            "with_items": [
+                "flatly",
+                "journal"
+            ]
+        },
+        "error": {
+            "src": "https://bla.com/foo.html"
+        }
+    },
     "tasks": {
         "badtask": ["pythontest"],
         "releasepy": {
@@ -32,6 +48,12 @@
                     "when": "cfg.push"
                 }
             ]
+        },
+        "httpfiles": {
+            "command": "httpcopy:bootswatch"
+        },
+        "httpcopy-error": {
+            "command": "httpcopy:error"
         }
     }
 }

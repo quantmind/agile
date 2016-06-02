@@ -5,14 +5,14 @@ from pulsar import ImproperlyConfigured
 
 from cloud import aws
 
-from .. import utils
+from .. import core
 
 
 content_types = {'fjson': 'application/json',
                  'inv': 'text/plain'}
 
 
-class Docs(utils.AgileApp):
+class Docs(core.AgileCommand):
     """Requires a valid sphinx installation
     """
     description = 'Compile sphinx docs and upload them to aws'
@@ -23,7 +23,7 @@ class Docs(utils.AgileApp):
             raise ImproperlyConfigured('path "%s" missing' % path)
         os.chdir(path)
         try:
-            text = await utils.execute('make', self.cfg.docs)
+            text = await self.execute('make', self.cfg.docs)
         finally:
             os.chdir(self.app.repo_path)
         self.logger.info(text)

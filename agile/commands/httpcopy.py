@@ -2,25 +2,31 @@ import os
 import asyncio
 from urllib.parse import urlsplit
 
-from pulsar import ImproperlyConfigured
-
-from .. import utils
+from .. import core
 
 
-class HttpCopy(utils.AgileApp):
+class HttpCopy(core.AgileCommand):
     description = 'Copy remote files to local ones via Http'
 
     async def __call__(self, name, cfg, options):
-        srcs = utils.as_list(cfg.get('src'), 'missing src')
+        srcs = self.as_list(cfg.get('src'), 'missing src')
         target = cfg.get('target')
         if not target:
-            raise ImproperlyConfigured('%s: target is missing' % name)
+            raise self.error('target is missing in config dictionary')
         requests = []
-        for src in srcs:
-            requests.append(self._http_and_copy(src, target))
+        with_items = self.with_items(cfg)
+        if with_items is None:
+            with_items = ['']
+
+        for item in with_items:
+            for src in srcs:
+                requests.append(self._http_and_copy(src, target, item))
         await asyncio.gather(*requests)
 
-    async def _http_and_copy(self, src, target):
+    async def _http_and_copy(self, src, target, item):
+        context = self.context(item=item)
+        src = self.render(src, context)
+        target = self.render(target, context)
         response = await self.http.get(src)
         response.raise_for_status()
         path, target = os.path.split(target)

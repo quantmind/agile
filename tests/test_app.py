@@ -2,9 +2,10 @@ import tests
 
 
 class TestApp(tests.AgileTest):
-    config = 'tests/configs/python.json'
+    config_file = 'tests/configs/python.json'
 
     async def test_task(self):
-        app = self.app(config_file=self.config)
-        self.assertFalse(app.cfg.push)
-        self.assertEqual(app.eval('cfg.push'), False)
+        agile = await self.app()
+        self.assertTrue(agile.context)
+        self.assertFalse(agile.cfg.push)
+        self.assertEqual(agile.eval('cfg.push'), False)

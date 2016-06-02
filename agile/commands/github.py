@@ -9,10 +9,10 @@ from dateutil import parser
 
 from pulsar.utils.html import capfirst
 
-from .. import utils
+from .. import core
 
 
-class RemoveRelease(utils.AgileSetting):
+class RemoveRelease(core.AgileSetting):
     name = "remove_release"
     flags = ['--remove-release']
     nargs = "?"
@@ -33,7 +33,7 @@ close_issue = set((
 ))
 
 
-class Github(utils.AgileApp):
+class Github(core.AgileCommand):
     """Create Github releases.
 
     Without the ``--commit`` or ``--push`` flags nothing is committed
@@ -56,8 +56,8 @@ class Github(utils.AgileApp):
         # Get the version to release and validate
         version = opts.get('version')
         if not version:
-            raise utils.AgileError('"version" not specified in github.%s '
-                                   'dictionary' % name)
+            raise self.error('"version" not specified in github.%s '
+                             'dictionary' % name)
         version = self.render(version)
 
         if self.cfg.remove_release:
@@ -92,11 +92,11 @@ class Github(utils.AgileApp):
         if self.cfg.commit or self.cfg.push:
             #
             # Create the tar or zip file
-            dist = utils.as_dict(opts.get('dist', {}),
-                                 "dist entry should be a dictionary")
+            dist = self.as_dict(opts.get('dist', {}),
+                                "dist entry should be a dictionary")
             for name, value in dist.items():
                 if name not in self.actions:
-                    raise utils.AgileError('No such action "%s"' % name)
+                    raise self.error('No such action "%s"' % name)
             #
             version = '%s%s' % (tag_prefix, version)
             release['tag_name'] = version
@@ -132,7 +132,7 @@ class Github(utils.AgileApp):
         if release:
             tag = release['tag_name']
             rel = self.gitapi.repo(self.git.repo_path).release(release['id'])
-            for src in utils.as_list(src):
+            for src in self.as_list(src):
                 src = self.render(src)
                 for filename in glob.glob(src):
                     self.logger.info('Uploading %s to release %s',

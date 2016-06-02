@@ -5,7 +5,6 @@ from agile.git import Git
 
 
 class TestGitCommands(tests.AgileTest):
-    config = 'tests/configs/python.json'
 
     async def test_branch(self):
         git = await Git.create()

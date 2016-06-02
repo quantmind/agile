@@ -1,9 +1,9 @@
 import logging
+
 from urllib.parse import urlsplit
 
-from pulsar import ImproperlyConfigured
-
 from .github import GithubApi
+
 from . import utils
 
 
@@ -32,8 +32,7 @@ class Git:
             path = p.path
 
         if not path.endswith('.git'):
-            raise ImproperlyConfigured('Remote origin "%s" not supprted' %
-                                       remote)
+            raise utils.AgileError('Remote origin "%s" not supported' % remote)
         path = path[:-4]
 
         if domain == 'github.com':

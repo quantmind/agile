@@ -1,7 +1,7 @@
-from .. import utils
+from .. import core
 
 
-class Shell(utils.AgileApp):
+class Shell(core.AgileCommand):
     """Run shell commands
     """
     description = 'Run arbitrary commands on the shell'
@@ -9,4 +9,5 @@ class Shell(utils.AgileApp):
     async def __call__(self, name, config, options):
         results = await self.shell(**config)
         if results:
-            self.context[name] = results if len(results) > 1 else results[0]
+            result = results if len(results) > 1 else results[0]
+            self.app.context[name] = result
