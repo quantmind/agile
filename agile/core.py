@@ -148,9 +148,10 @@ class TaskExecutor:
         }
         self.config = self._load_json()
 
-    async def __call__(self):
+    async def __call__(self, tasks=None):
         code = 0
-        tasks = tuple(self.cfg.tasks or self.config['tasks'])
+        if tasks is None:
+            tasks = tuple(self.cfg.tasks or self.config['tasks'])
         start = False
         command = None
         try:
@@ -166,8 +167,10 @@ class TaskExecutor:
                     else:
                         raise
                 if start:
+                    code = 3
                     break
-            await self.http.close()
+            if not start:
+                await self.http.close()
         except utils.AgileError as exc:
             msg = '%s - %s' % (command, exc)
             self.logger.error(msg)
@@ -227,20 +230,6 @@ class TaskExecutor:
             self.context[entry] = load_json(config_file)
         return self.context.get(entry)
 
-    async def _execute_tasks(self, tasks, start_server=False):
-        start = False
-        for task in tasks:
-            try:
-                start = start or await TaskCommand(self, task)(start_server)
-            except utils.AgileError as exc:
-                if self.cfg.force:
-                    self.logger.error(exc)
-                else:
-                    raise
-            if start:
-                break
-        return start
-
 
 class TaskCommand:
     """Execute a task entry
@@ -265,7 +254,7 @@ class TaskCommand:
     def all_tasks(self):
         return self.manager.config['tasks']
 
-    async def __call__(self, start_server=False):
+    async def __call__(self):
         self.manager.logger.info('Executing "%s" task - %s' %
                                  (self.task, task_description(self.info)))
         started = False
@@ -288,10 +277,11 @@ class TaskCommand:
                 if command in self.all_tasks:
                     # the command is another task
                     command = TaskCommand(self.manager, command, self.running)
-                    st = await command(start_server)
+                    started = await command()
                 else:
-                    st = await self._execute(command, start_server)
-                started = started or st
+                    started = await self._execute(command)
+                if started:
+                    break
             except utils.AgileSkip:
                 self.manager.logger.info('Skip command %s', command)
         return started
@@ -331,13 +321,12 @@ class TaskCommand:
             if not cfg:
                 raise utils.AgileError('No entry "%s" in %s' %
                                        (command, manager.cfg.config_file))
-            start = await app(entry, app.as_dict(cfg, entry), options)
+            await app(entry, app.as_dict(cfg, entry), options)
         else:
             for entry, cfg in config.items():
-                start = await app(entry, app.as_dict(cfg, entry), options)
+                await app(entry, app.as_dict(cfg, entry), options)
 
-        if start:
-            return app.start_server()
+        return app.start_server()
 
 
 def load_json(filename):

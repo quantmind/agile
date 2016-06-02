@@ -40,7 +40,7 @@ class Watch(core.AgileCommand, core.TaskExecutor):
         filename = self.changed(files)
         if filename:
             self.logger.warning('CHANGES in "%s"', filename)
-            await self.execute_tasks(tasks)
+            await self.app(tasks)
             self.logger.info('FINISHED with "%s" changes', filename)
 
     def changed(self, files):

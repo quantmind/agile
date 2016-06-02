@@ -97,7 +97,8 @@ class AgileManager(pulsar.Application, core.TaskExecutor):
         self.done()
 
     def done(self, exit_code=0):
-        raise HaltServer(exit_code=exit_code)
+        if exit_code < 3:
+            raise HaltServer(exit_code=exit_code)
 
     def _exit(self, fut):
         self.done(exit_code=fut.result())
