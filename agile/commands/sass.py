@@ -1,3 +1,5 @@
+import asyncio
+
 from .. import core
 
 
@@ -16,15 +18,30 @@ class Sass(core.AgileCommand):
         args = ''
         if node_modules in command:
             args = ' --include-path %s' % node_modules
-        for target, src in files.items():
-            if target.endswith('.css'):
-                target = target[:-4]
-            #
-            cmd = '%s%s %s %s.css' % (command, args, src, target)
-            self.logger.info('executing sass:%s - %s', name, cmd)
-            self.log_execute(await self.execute(cmd))
-            #
-            cmd = '%s%s %s %s.min.css --output-style compressed' % (
-                command, args, src, target)
-            self.logger.info('executing sass:%s - %s', name, cmd)
-            self.log_execute(await self.execute(cmd))
+
+        with_items = self.with_items(config)
+        if with_items is None:
+            with_items = ['']
+
+        coros = []
+        for item in with_items:
+            for target, src in files.items():
+                coros.append(self._sass(
+                    command, target, src, args,
+                    'css', item))
+                coros.append(self._sass(
+                    command, target, src, args,
+                    'min.css --output-style compressed', item))
+
+        await asyncio.gather(*coros)
+
+    async def _sass(self, command, target, src, args, end, item):
+        context = self.context(item=item)
+        target = self.render(target, context)
+        src = self.render(src, context)
+        if target.endswith('.css'):
+            target = target[:-4]
+        #
+        cmd = '%s%s %s %s.%s' % (command, args, src, target, end)
+        self.logger.info(cmd)
+        self.log_execute(await self.execute(cmd))

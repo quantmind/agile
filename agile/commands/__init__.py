@@ -8,3 +8,4 @@ from . import s3        # noqa
 from . import watch     # noqa
 from . import python    # noqa
 from . import vars      # noqa
+from . import template  # noqa

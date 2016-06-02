@@ -97,7 +97,8 @@ class AgileCommand(metaclass=AgileMeta):
     def with_items(self, cfg):
         with_items = cfg.get('with_items')
         if with_items:
-            with_items = self.render(with_items)
+            if isinstance(with_items, str):
+                with_items = self.eval(with_items)
             if not isinstance(with_items, list):
                 raise utils.AgileError('with_items should be a list')
             return with_items
@@ -170,10 +171,10 @@ class TaskExecutor:
         except utils.AgileError as exc:
             msg = '%s - %s' % (command, exc)
             self.logger.error(msg)
-            code = 1
+            code = 2
         except Exception as exc:
             self.logger.exception(str(exc))
-            code = 2
+            code = 1
         finally:
             self._running = False
         return code

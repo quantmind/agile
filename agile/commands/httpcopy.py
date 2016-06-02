@@ -28,7 +28,12 @@ class HttpCopy(core.AgileCommand):
         src = self.render(src, context)
         target = self.render(target, context)
         response = await self.http.get(src)
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except Exception:
+            self.logger.error('Could not http copy %s: %s',
+                              src, response.get_status())
+            return
         path, target = os.path.split(target)
         if not os.path.isdir(path):
             os.makedirs(path)

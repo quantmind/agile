@@ -1,5 +1,5 @@
 import pulsar
-from pulsar import validate_list, ensure_future
+from pulsar import validate_list, ensure_future, HaltServer
 
 from . import core
 from . import commands      # noqa
@@ -84,7 +84,7 @@ class AgileManager(pulsar.Application, core.TaskExecutor):
         if not exc:
             executor = await self.executor(loop=worker._loop)
             if executor.cfg.list_tasks:
-                executor.list_tasks()
+                worker._loop.call_soon(self.list_tasks, executor)
             else:
                 fut = ensure_future(executor(), loop=worker._loop)
                 fut.add_done_callback(self._exit)
@@ -92,5 +92,12 @@ class AgileManager(pulsar.Application, core.TaskExecutor):
     def executor(self, **kw):
         return core.TaskExecutor.create(self.cfg, **kw)
 
+    def list_tasks(self, executor):
+        executor.list_tasks()
+        self.done()
+
+    def done(self, exit_code=0):
+        raise HaltServer(exit_code=exit_code)
+
     def _exit(self, fut):
-        pulsar.arbiter().stop(exit_code=fut.result())
+        self.done(exit_code=fut.result())

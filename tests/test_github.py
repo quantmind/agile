@@ -9,7 +9,7 @@ class TestGithubApp(tests.GithubMix, tests.AgileTest):
     async def test_bad_task(self):
         agile = await self.app(["badtask"])
         self.assertEqual(agile.cfg.tasks, ["badtask"])
-        await self.wait.assertEqual(agile(), 1)
+        await self.wait.assertEqual(agile(), 2)
 
     async def test_release_notes(self):
         try:

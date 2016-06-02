@@ -33,4 +33,4 @@ class TestHttpCopy(tests.AgileTest):
 
     async def test_http_copy_error(self):
         agile = await self.app(["httpcopy-error"])
-        await self.wait.assertEqual(agile(), 1)
+        await self.wait.assertEqual(agile(), 2)
