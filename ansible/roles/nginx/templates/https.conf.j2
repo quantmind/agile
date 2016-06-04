@@ -1,5 +1,4 @@
-    # enable spdy for modern browsers
-    listen 443 ssl spdy;
+    listen 443 ssl http2;
     ssl on;
     ssl_certificate {{ server_crt_dir }}/{{ item.filename | default(item.domain) }}/server.crt;
     ssl_certificate_key {{ server_crt_dir }}/{{ item.filename | default(item.domain) }}/server.key;

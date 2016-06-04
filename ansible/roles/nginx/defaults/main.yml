@@ -5,6 +5,7 @@ nginx_conf_dir: /etc/nginx
 server_crt_dir: /etc/ssl
 acme_challenge_path: false
 acme_challenge_location: /.well-known/acme-challenge/
+nginx_resolver: 8.8.8.8
 
 nginx_default_index_html: |
   <html>
