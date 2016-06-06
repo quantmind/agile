@@ -1,11 +1,19 @@
 ---
 ssl_passphrase: changeme
 nginx_state: install
+nginx_executable: /usr/sbin/nginx
 nginx_conf_dir: /etc/nginx
+nginx_log_dir: /var/log/nginx
+nginx_user: www-data
+nginx_keep_alive: 65
+nginx_websocket: true
+nginx_gzip_min_length: 1000
+# list of objects to create map entries
+# {from: <str>, to: <str>, entries: []}
+nginx_maps: []
 server_crt_dir: /etc/ssl
-acme_challenge_path: false
-acme_challenge_location: /.well-known/acme-challenge/
-nginx_resolver: 8.8.8.8
+nginx_resolver: 8.8.8.8 8.8.4.4
+openresty: false
 
 nginx_default_index_html: |
   <html>
@@ -17,6 +25,7 @@ nginx_default_index_html: |
     </body>
   </html>
 
+nginx_config_templates: []
 #
 # if specified, download certificates from this s3 bucket
 certificate_bucket: ""

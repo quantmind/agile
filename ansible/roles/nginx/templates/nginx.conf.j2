@@ -1,55 +1,70 @@
-{% if item.websocket | default(False) %}
-map $http_upgrade $connection_upgrade {
-    default upgrade;
-    ''      close;
+user {{ nginx_user }};
+worker_processes auto;
+pid /run/nginx.pid;
+
+
+events {
+    worker_connections 768;
+    # multi_accept on;
 }
-{% endif %}
 
-{% if item.maps | default(False) %}
-{% include "maps.conf.j2" with context %}
-{% endif %}
+http {
 
-{% if item.certificate | default(False) %}
-{% include "ssl.redirect.conf.j2" with context %}
-{% endif %}
-
-server {
-{% if item.certificate | default(False) %}
-{% include "https.conf.j2" with context %}
-{% else %}
-{% include "http.conf.j2" with context %}
-{% endif %}
-
-
-    # resolver configuration in case it is needed
-    resolver            {{ nginx_resolver }} valid=300s;
-    resolver_timeout    5s;
-
-    # log files
-    access_log  /var/log/nginx/{{ item.filename | default(item.domain) }}.access.log;
-    error_log  /var/log/nginx/{{ item.filename | default(item.domain) }}.error.log;
-
-    # SERVER NAME
-    server_name {{ item.domain }};
-
-    client_body_in_file_only clean;
-    client_body_buffer_size 32K;
-    client_max_body_size 300M;
     sendfile on;
-    send_timeout 300s;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout {{ nginx_keep_alive }};
+    types_hash_max_size 2048;
+    # server_tokens off;
 
-    proxy_http_version 1.1;
+    # server_names_hash_bucket_size 64;
+    # server_name_in_redirect off;
 
-{% if item.locations | default(False) %}
-{% for location in item.locations %}
-{% if location.host | default(False) %}
-{% include "location.proxypass.conf.j2" with context %}
-{% elif location.s3location | default(False) %}
-{% include "location.aws.conf.j2" with context %}
-{% elif location.lines | default(False) %}
-{% include "location.lines.conf.j2" with context %}
+    include {{ nginx_conf_dir }}/mime.types;
+    default_type application/octet-stream;
+
+    ##
+    # SSL Settings
+    ##
+
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # Dropping SSLv3, ref: POODLE
+    ssl_prefer_server_ciphers on;
+
+    ##
+    # Logging Settings
+    ##
+
+    access_log {{ nginx_log_dir }}/access.log;
+    error_log {{ nginx_log_dir }}/error.log;
+
+    ##
+    # Gzip Settings
+    ##
+
+    gzip on;
+    gzip_disable "msie6";
+    gzip_comp_level  2;
+    gzip_min_length  {{ nginx_gzip_min_length }};
+
+    # gzip_vary on;
+    # gzip_proxied any;
+    # gzip_comp_level 6;
+    # gzip_buffers 16 8k;
+    # gzip_http_version 1.1;
+    # gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+{% if nginx_websocket %}
+    map $http_upgrade $connection_upgrade {
+        default upgrade;
+        ''      close;
+    }
 {% endif %}
-{% endfor %}
-{% endif %}
 
+{% include "maps.conf.j2" with context %}
+
+    ##
+    # Virtual Host Configs
+    ##
+    include {{ nginx_conf_dir }}/conf.d/*.conf;
+    include {{ nginx_conf_dir }}/sites-enabled/*;
 }

@@ -9,9 +9,17 @@
   with_items: "{{ services }}"
   when: item.certificate is defined and item.domain is defined
 
-- name: Make sure acme directories are available
+- name: make sure {{ nginx_conf_dir }}/conf.d is available
   file:
-    path="{{ acme_challenge_path }}/{{ item.filename | default(item.domain) }}"
+    path="{{ nginx_conf_dir }}/conf.d"
     state=directory
-  with_items: "{{ services }}"
-  when: acme_challenge_path != false and item.domain is defined
+
+- name: make sure {{ nginx_conf_dir }}/sites-available is available
+  file:
+    path="{{ nginx_conf_dir }}/sites-available"
+    state=directory
+
+- name: make sure {{ nginx_conf_dir }}/sites-enabled is available
+  file:
+    path="{{ nginx_conf_dir }}/sites-enabled"
+    state=directory

@@ -1,11 +1,21 @@
 ---
+- include_vars: openresty.yml
+  when: openresty != false
+
 - include: install.yml
-  when: nginx_state == 'install'
+  when: nginx_state == 'install' and not openresty
+
+- include: install_open_resty.yml
+  when: nginx_state == 'install' and openresty
 
 - include: clear.yml
   when: nginx_state == 'clear_sites'
 
+- include: install_sites.yml
+  become: true
+  when: nginx_state == 'install_sites'
+
 - name: Set nginx state to {{ nginx_state }}
   service: name=nginx state={{ nginx_state }}
-  when: nginx_state != 'install' and nginx_state != 'clear_sites'
+  when: nginx_state != 'install' and nginx_state != 'clear_sites' and nginx_state != 'install_sites'
 

@@ -1,0 +1,39 @@
+- name: Remove previous installation directory
+  file:
+    path='{{ ansible_env.HOME }}/openresty-{{ openresty }}'
+    state=absent
+
+- name: download and decompress OpenResty
+  unarchive:
+    src='https://openresty.org/download/openresty-{{ openresty }}.tar.gz'
+    dest='{{ ansible_env.HOME }}'
+    copy=no
+
+- name: configure openresty
+  shell: ./configure --with-http_realip_module --with-http_addition_module --with-http_v2_module
+  args:
+    chdir: '{{ ansible_env.HOME }}/openresty-{{ openresty }}'
+
+- name: make openresty
+  shell: make
+  args:
+    chdir: '{{ ansible_env.HOME }}/openresty-{{ openresty }}'
+
+- name: install openresty
+  shell: make install
+  become: true
+  args:
+    chdir: '{{ ansible_env.HOME }}/openresty-{{ openresty }}'
+
+- name: remove previous nginx executable
+  become: true
+  file:
+    path="{{ nginx_executable }}"
+    state=absent
+
+- name: create symlink to {{ nginx_executable }}
+  become: true
+  file:
+    src="{{ nginx_openresty_executable }}"
+    path="{{ nginx_executable }}"
+    state=link
