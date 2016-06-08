@@ -1,7 +1,3 @@
-#
-# service home path
-service_home_path: "{{ lux_service_path }}/{{ service_user }}"
-
 # Log directory
 service_log_path: "{{ lux_log_path }}/{{ service_user }}"
 

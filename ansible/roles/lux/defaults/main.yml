@@ -12,7 +12,8 @@ install_repo: true
 # requirement files to pip install
 requirement_files: ['requirements.txt']
 cookiename: ''
-lux_services: []
+# In case there are more than one service
+lux_services: ['']
 #
 #
 # ##############################
@@ -42,9 +43,6 @@ deploy_key_bucket: 'change me'
 deploy_key: 'change me'
 deploy_key_password: 'change me'
 
-
-# Base directory of service
-lux_service_path: '/var/opt'
 # Base directory of service logs
 lux_log_path: '/var/log'
 

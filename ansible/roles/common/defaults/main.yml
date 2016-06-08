@@ -17,8 +17,11 @@ ansible_pip: "pip2"
 # Redis - client configuration
 redis_port: 6379
 redis_host: '127.0.0.1'
-# Service user
-service_user: ''
+
+# Service user and path
+service_user: 'changeme'
+# Base directory of service
+service_base_path: '/var/opt'
 
 # List of objects defining services.
 #

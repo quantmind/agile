@@ -27,6 +27,8 @@ pyserver_packages:
     - libhdf5-dev
     - liblzo2-dev
     - libpq-dev
+    - libxml2-dev
+    - libxslt1-dev
     - build-essential
     - python-pip
     - python3
