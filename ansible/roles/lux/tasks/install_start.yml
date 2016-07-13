@@ -27,7 +27,7 @@
     state=directory
   become: yes
 
-- name: Copy GitHub key for "{{ github_boot }}" user into {{ service_home_path }}/.ssh/id_rsa from {{ deploy_key_bucket }}/{{ deploy_key }}
+- name: Copy deployment key into {{ service_home_path }}/.ssh/id_rsa from {{ deploy_key_bucket }}/{{ deploy_key }}
   s3:
     bucket={{ deploy_key_bucket }}
     object="{{ deploy_key }}"

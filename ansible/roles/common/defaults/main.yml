@@ -2,6 +2,7 @@
 #
 # The common role is required by all playbooks using roles in this package
 #
+
 git_user: ""
 #
 # Python version to use

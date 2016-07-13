@@ -3,6 +3,7 @@ import logging
 from urllib.parse import urlsplit
 
 from .github import GithubApi
+from .bitbucket import BitBucketApi
 
 from . import utils
 
@@ -37,6 +38,8 @@ class Git:
 
         if domain == 'github.com':
             return Github(domain, path)
+        elif domain == 'bitbucket.org':
+            return BitBucket(domain, path)
         else:
             return Gitlab(domain, path)
 
@@ -119,5 +122,11 @@ class Github(Git):
         return GithubApi(**kw)
 
 
-def Gitlab(Git):
+class BitBucket(Git):
+
+    def api(self, **kw):
+        return BitBucketApi(**kw)
+
+
+class Gitlab(Git):
     pass

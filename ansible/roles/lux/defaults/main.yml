@@ -24,8 +24,6 @@ process_name: ''
 # ##############################
 # Github repo and credentials
 #
-# username of the github user installing services
-github_boot: 'change me'
 # repository containing the code to deploy
 github_repository: 'change me'
 # Can be a SHA1 hash, branch name, or tag name
