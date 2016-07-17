@@ -1,0 +1,8 @@
+# Ansible requirements
+pip
+ansible
+boto
+redis
+python-dateutil
+docker-compose
+docker-py

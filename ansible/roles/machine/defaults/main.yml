@@ -1,0 +1,19 @@
+---
+#
+apt_packages:
+    - git
+    - curl
+    - libssl-dev
+    - libbz2-dev
+    - libsqlite3-dev
+    - libreadline-dev
+    - pkgconf
+    - liblzo2-dev
+    - libpq-dev
+    - libxml2-dev
+    - libxslt1-dev
+    - build-essential
+    - python-pip
+    - python
+    - python-dev
+    - python-pip

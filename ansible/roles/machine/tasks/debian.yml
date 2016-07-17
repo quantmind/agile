@@ -1,0 +1,12 @@
+- name: ensure aptitude is installed
+  apt: pkg=aptitude state=present
+  become: yes
+
+- name: update apt
+  apt: update_cache=yes upgrade=full cache_valid_time=86400 force=yes
+  become: yes
+
+- name: install apt packages
+  apt: pkg={{item}} state=present force=yes
+  with_items: '{{ apt_packages }}'
+  become: yes

@@ -1,0 +1,17 @@
+---
+- name: Copy requirements.txt
+  copy:
+    src: requirements.txt
+    dest: "{{ ansible_env.HOME }}/requirements.txt"
+
+- name: install python 2 dependencies
+  pip:
+    state=present
+    requirements="{{ ansible_env.HOME }}/requirements.txt"
+    extra_args='-U'
+  become: yes
+
+- name: Remove {{ ansible_env.HOME }}/requirements.txt
+  file:
+    path: "{{ ansible_env.HOME }}/requirements.txt"
+    state: absent
