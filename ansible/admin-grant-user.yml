@@ -7,6 +7,11 @@
 #   It makes sure SSH keys for particular GitHub user are
 #   in the authorized_keys or not.
 #
+#   When using with AWS for the first time you may need to pass the
+#   key used to create the instance
+#
+#   ansible-playbook -i inv/stage admin-grant-user.yml -u ubuntu --private-key ~/.ssh/key
+#
 ---
 - name: Grant user access to the inventory chosen
 

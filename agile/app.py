@@ -60,6 +60,14 @@ class Push(core.AgileSetting):
     desc = "Push changes to origin"
 
 
+class Environ(core.AgileSetting):
+    name = "environ"
+    flags = ['--environ']
+    action = "store_true"
+    default = False
+    desc = "Show the environment and exit"
+
+
 class AgileManager(pulsar.Application, core.TaskExecutor):
     name = 'agile'
     cfg = pulsar.Config(apps=['agile'],
@@ -85,6 +93,8 @@ class AgileManager(pulsar.Application, core.TaskExecutor):
             executor = await self.executor(loop=worker._loop)
             if executor.cfg.list_tasks:
                 worker._loop.call_soon(self.list_tasks, executor)
+            elif executor.cfg.environ:
+                worker._loop.call_soon(self.show_environ, executor)
             else:
                 fut = ensure_future(executor(), loop=worker._loop)
                 fut.add_done_callback(self._exit)
@@ -94,6 +104,10 @@ class AgileManager(pulsar.Application, core.TaskExecutor):
 
     def list_tasks(self, executor):
         executor.list_tasks()
+        self.done()
+
+    def show_environ(self, executor):
+        executor.show_environ()
         self.done()
 
     def done(self, exit_code=0):

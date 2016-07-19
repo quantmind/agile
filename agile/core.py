@@ -219,6 +219,14 @@ class TaskExecutor:
         print('')
         print('==========================================')
 
+    def show_environ(self):
+        ctx = self.context.copy()
+        name = self.cfg.config_file.split('.')[0]
+        ctx.pop(name, None)
+        ctx['cfg'] = dict(((name, s.value) for name, s in
+                           self.cfg.settings.items()))
+        print(json.dumps(ctx, indent=4))
+
     def _load_json(self):
         for filename in os.listdir(self.repo_path):
             if not utils.skip_file(filename) and filename.endswith('.json'):

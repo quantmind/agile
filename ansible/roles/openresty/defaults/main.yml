@@ -1,0 +1,17 @@
+---
+ssl_passphrase: false
+openresty_createimage: false
+openresty_volume_path: "{{ ansible_env.HOME }}/openresty"
+#
+# nginx configuration
+openresty_base_path: /usr/local/openresty
+nginx_keep_alive: 65
+nginx_websocket: true
+nginx_gzip_min_length: 1000
+# list of objects to create map entries
+# {from: <str>, to: <str>, entries: []}
+nginx_maps: []
+nginx_resolver: 8.8.8.8 8.8.4.4
+
+nginx_config_templates: []
+nginx_html_templates: []
