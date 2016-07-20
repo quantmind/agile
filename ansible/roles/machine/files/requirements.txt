@@ -1,8 +1,6 @@
 # Ansible requirements
 pip
 -e git+https://github.com/ansible/ansible.git@devel#egg=ansible
--e git+https://github.com/docker/docker-py.git@master#egg=docker-py
 boto
 redis
 python-dateutil
-docker-compose
