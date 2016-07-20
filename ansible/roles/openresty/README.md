@@ -4,7 +4,7 @@ Ansible role to create an openresty docker image and add configuration files.
 
 ## Create Image
 
-To create an image the ``openresty_createimage`` variable must be set to ``true``.
+To create an image the ``openresty_image_name`` must be a string for the image name.
 An example playbook:
 ```yaml
 - name: Create the docker image for openresty
@@ -12,9 +12,7 @@ An example playbook:
   hosts: nginx
 
   vars:
-    image_name: openresty
-    tag: latest
-    openresty_createimage: true
+    openresty_image_name: openresty
 
   roles:
     - openresty
@@ -23,7 +21,7 @@ An example playbook:
 
 ## Install sites
 
-When ``openresty_createimage`` is set to ``false`` (the default value), the role installs
+When ``openresty_image_name`` is set to ``false`` (the default value), the role installs
 
 * Nginx configuration files for web sites in ``openresty_volume_nginx_config_path``
 * SSL server certificates in ``openresty_volume_nginx_ssl_path``
