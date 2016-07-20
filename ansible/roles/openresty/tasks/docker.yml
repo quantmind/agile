@@ -16,7 +16,7 @@
     tag="{{ openresty_tag }}"
     force=true
     push=false
-  when: docker_repo == false
+  when: openresty_push == false
 
 - name: create a new {{ openresty_image_name }} and push to {{ openresty_repository }}
   docker_image:
@@ -25,4 +25,4 @@
     tag="{{ openresty_tag }}"
     force=true
     push=true
-  when: docker_repo == false
+  when: openresty_push != false
