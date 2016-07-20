@@ -1,6 +1,6 @@
 # Ansible requirements
 pip
-ansible
+-e git+https://github.com/ansible/ansible.git@devel#egg=ansible
 boto
 redis
 python-dateutil

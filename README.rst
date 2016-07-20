@@ -20,13 +20,23 @@
 .. |coverage-master| image:: https://coveralls.io/repos/github/quantmind/pulsar-agile/badge.svg?branch=master
   :target: https://coveralls.io/github/quantmind/pulsar-agile?branch=master
 
-**ALPHA - USE IT WITH EXTRA CARE**
 
-========
+|
+
+**Toolkit for agile development with python, git, github, ansible_, docker_ and aws**
+
+
+.. contents:: **CONTENTS**
+
+
 Agile
 ========
 
-Toolkit for agile development with python, git, github and aws.
+This is a python package for aiding deployment and dev-ops type operations on the local machine.
+To install the package you need python 3.5 or above::
+
+    pip install -U pulsar-agile
+
 
 Usage
 --------
@@ -75,8 +85,16 @@ the following two entries:
     os.environ['GITHUB_TEST_REPO'] = "<username>/<reponame>"
 
 
+Ansible
+==========
+
+The ``ansible`` directory contains a collection of ansible_ roles.
+
+
 .. _`Luca Sbardella`: http://lucasbardella.com
 .. _`Quantmind`: http://quantmind.com
 .. _`google user group`: https://groups.google.com/forum/?fromgroups#!forum/python-pulsar
 .. _agileplay.py: https://github.com/quantmind/pulsar-agile/blob/master/agileplay.py
 .. _agile.json: https://github.com/quantmind/pulsar-agile/blob/master/agile.json
+.. _ansible: https://github.com/ansible/ansible
+.. _docker: https://www.docker.com/
