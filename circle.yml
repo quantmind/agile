@@ -1,0 +1,12 @@
+machine:
+
+
+dependencies:
+  override:
+    - pip install -U -r ansible/roles/machine/files/requirements.txt
+
+
+test:
+  override:
+    - cd ansible
+    - ansible-playbook roles/openresty/tests/docker.yml

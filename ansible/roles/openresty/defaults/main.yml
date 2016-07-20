@@ -1,9 +1,13 @@
 ---
-ssl_passphrase: false
-openresty_createimage: false
+# Location when dockerfile is located as well as all config/logs/ssl/html directories
 openresty_volume_path: "{{ ansible_env.HOME }}/openresty"
 #
-# nginx configuration
+# When image_name is defined, the role create an openresty image
+openresty_image_name: false
+openresty_repository: false
+openresty_tag: latest
+#
+# nginx.conf (added to docker image)
 openresty_base_path: /usr/local/openresty
 nginx_keep_alive: 65
 nginx_websocket: true
@@ -13,5 +17,10 @@ nginx_gzip_min_length: 1000
 nginx_maps: []
 nginx_resolver: 8.8.8.8 8.8.4.4
 
+#
+# These parameters are used when building configuration files (openresty_image_name == false)
+ssl_passphrase: false
+openresty_volume_path: "{{ ansible_env.HOME }}/openresty"
+services: []
 nginx_config_templates: []
 nginx_html_templates: []

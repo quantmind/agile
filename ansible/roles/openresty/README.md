@@ -20,3 +20,15 @@ An example playbook:
     - openresty
 
 ```
+
+## Install sites
+
+When ``openresty_createimage`` is set to ``false`` (the default value), the role installs
+
+* Nginx configuration files for web sites in ``openresty_volume_nginx_config_path``
+* SSL server certificates in ``openresty_volume_nginx_ssl_path``
+* Html/static assets in ``openresty_volume_nginx_html_path``
+
+### Configuration files
+
+These are defined in the ``services`` list.

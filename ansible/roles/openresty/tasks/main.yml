@@ -1,7 +1,7 @@
 - include: directories.yml
 
 - include: docker.yml
-  when: openresty_createimage == true
+  when: openresty_image_name != true
 
 - include: configure.yml
-  when: openresty_createimage != true
+  when: openresty_image_name == false
