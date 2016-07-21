@@ -1,5 +1,6 @@
 :Badges: |license|  |pyversions| |status|
 :Master CI: |master-build| |coverage-master|
+:Ansible CI: |circleci|
 :Downloads: http://pypi.python.org/pypi/pulsar-agile
 :Source: https://github.com/quantmind/pulsar-agile
 :Mailing list: `google user group`_
@@ -19,7 +20,8 @@
   :target: https://travis-ci.org/quantmind/pulsar-agile
 .. |coverage-master| image:: https://coveralls.io/repos/github/quantmind/pulsar-agile/badge.svg?branch=master
   :target: https://coveralls.io/github/quantmind/pulsar-agile?branch=master
-
+.. |circleci| image:: https://circleci.com/gh/quantmind/pulsar-agile.svg?style=svg
+  :target: https://circleci.com/gh/quantmind/pulsar-agile
 
 |
 
