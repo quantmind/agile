@@ -4,3 +4,4 @@ pip
 boto
 redis
 python-dateutil
+docker-py
