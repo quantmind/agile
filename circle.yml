@@ -15,4 +15,4 @@ dependencies:
 
 test:
   override:
-    - cd ansible; ansible-playbook roles/openresty/tests/docker.yml
+    - cd ansible/roles; ansible-playbook openresty/tests/docker.yml
