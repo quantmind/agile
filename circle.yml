@@ -8,11 +8,11 @@ machine:
 
 dependencies:
   override:
-    - docker info
-    - pip install -U pip
-    - pip install -U -r ansible/roles/machine/files/requirements.txt
+    - pip install -U pip ansible
+    - cd ansible; ansible-galaxy install -r test-requirements.yml
 
 
 test:
   override:
+    - cd ansible; ansible-playbook test-machine.yml
     - cd ansible/roles; ansible-playbook openresty/tests/docker.yml
