@@ -42,7 +42,7 @@ class TestGithubApi(tests.GithubMix, tests.AgileTest):
         bytag = await repo.releases.tag(release['tag_name'])
         self.assertEqual(bytag['id'], release['id'])
 
-    async def test_upload_file(self):
+    async def __test_upload_file(self):
         repo = self.repo
         release = await repo.releases.latest()
         assets = await repo.releases.release_assets(release)

@@ -11,7 +11,7 @@ class TestGithubApp(tests.GithubMix, tests.AgileTest):
         self.assertEqual(agile.cfg.tasks, ["badtask"])
         await self.wait.assertEqual(agile(), 2)
 
-    async def test_release_notes(self):
+    async def __test_release_notes(self):
         try:
             agile = await self.app(["releasepy"])
             self.assertEqual(agile.cfg.tasks, ["releasepy"])
