@@ -1,4 +1,6 @@
-:Badges: |license|  |pyversions| |status|
+**Toolkit for agile development with python, git, github, docker and aws**
+
+:Badges: |license|  |pyversions| |status| |pypiversion|
 :Master CI: |master-build| |coverage-master|
 :Downloads: http://pypi.python.org/pypi/pulsar-agile
 :Source: https://github.com/quantmind/pulsar-agile
@@ -7,6 +9,9 @@
 :Platforms: Linux, OSX, Windows. Python 3.5 and above
 :Keywords: git, github, python, aws, release, documentation
 
+
+. |pypiversion| image:: https://badge.fury.io/py/pulsar-agile.svg
+    :target: https://pypi.python.org/pypi/pulsar-agile
 .. |pyversions| image:: https://img.shields.io/pypi/pyversions/pulsar-agile.svg
   :target: https://pypi.python.org/pypi/pulsar-agile
 .. |license| image:: https://img.shields.io/pypi/l/pulsar-agile.svg
@@ -22,14 +27,11 @@
 
 |
 
-**Toolkit for agile development with python, git, github, docker_ and aws**
-
-
 .. contents:: **CONTENTS**
 
 
-Agile
-========
+Install
+==========
 
 This is a python package for aiding deployment and dev-ops type operations on the local machine.
 To install the package you need python 3.5 or above::
@@ -37,12 +39,22 @@ To install the package you need python 3.5 or above::
     pip install -U pulsar-agile
 
 
-Usage
---------
+Setup
+-------
+
+Once installed, create the ``play.py`` script inside of your repository:
+
+.. code:: python
+
+    if __name__ == '__main__':
+        from agile.app import AgileManager
+        AgileManager(description='Release manager for my package').start()
 
 
-Create the agileplay.py_ script inside of your repository and create the
-agile.json_ file along side.
+and create the agile.json_ file along side it.
+
+Commands
+------------
 
 Available commands to configure are:
 
@@ -53,24 +65,31 @@ Available commands to configure are:
 * **sass**: Compile scss files using SASS
 * **shell**: Run arbitrary commands on the shell
 
-When running tasks, the logging level is by default set to info. For a more
-verbose logging pass ``--log-level agile.debug``.
+
+Usage
+=========
 
 **Check tasks available**::
 
-  python agileplay.py -l
+  python play.py -l
 
 **Release dry run**::
 
-  python agileplay.py release
+  python play.py release
 
 **Release push**::
 
-  python agileplay.py release --push
+  python play.py release --push
 
+
+Logging
+----------
+
+When running tasks, the logging level is by default set to info. For a more
+verbose logging pass ``--log-level agile.debug``.
 
 Testing
------------
+==========
 
 To run unit tests, create a ``test_config.py`` file alongside this file and add
 the following two entries:
@@ -88,6 +107,4 @@ the following two entries:
 .. _`Luca Sbardella`: http://lucasbardella.com
 .. _`Quantmind`: http://quantmind.com
 .. _`google user group`: https://groups.google.com/forum/?fromgroups#!forum/python-pulsar
-.. _agileplay.py: https://github.com/quantmind/pulsar-agile/blob/master/agileplay.py
 .. _agile.json: https://github.com/quantmind/pulsar-agile/blob/master/agile.json
-.. _docker: https://www.docker.com/
