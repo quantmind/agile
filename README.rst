@@ -1,6 +1,5 @@
 :Badges: |license|  |pyversions| |status|
 :Master CI: |master-build| |coverage-master|
-:Ansible CI: |circleci|
 :Downloads: http://pypi.python.org/pypi/pulsar-agile
 :Source: https://github.com/quantmind/pulsar-agile
 :Mailing list: `google user group`_
@@ -20,12 +19,10 @@
   :target: https://travis-ci.org/quantmind/pulsar-agile
 .. |coverage-master| image:: https://coveralls.io/repos/github/quantmind/pulsar-agile/badge.svg?branch=master
   :target: https://coveralls.io/github/quantmind/pulsar-agile?branch=master
-.. |circleci| image:: https://circleci.com/gh/quantmind/pulsar-agile.svg?style=svg
-  :target: https://circleci.com/gh/quantmind/pulsar-agile
 
 |
 
-**Toolkit for agile development with python, git, github, ansible_, docker_ and aws**
+**Toolkit for agile development with python, git, github, docker_ and aws**
 
 
 .. contents:: **CONTENTS**
@@ -87,16 +84,10 @@ the following two entries:
     os.environ['GITHUB_TEST_REPO'] = "<username>/<reponame>"
 
 
-Ansible
-==========
-
-The ``ansible`` directory contains a collection of ansible_ roles.
-
 
 .. _`Luca Sbardella`: http://lucasbardella.com
 .. _`Quantmind`: http://quantmind.com
 .. _`google user group`: https://groups.google.com/forum/?fromgroups#!forum/python-pulsar
 .. _agileplay.py: https://github.com/quantmind/pulsar-agile/blob/master/agileplay.py
 .. _agile.json: https://github.com/quantmind/pulsar-agile/blob/master/agile.json
-.. _ansible: https://github.com/ansible/ansible
 .. _docker: https://www.docker.com/

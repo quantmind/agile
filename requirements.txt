@@ -1,3 +1,4 @@
 jinja2
 sphinx
 glob2
+pulsar-cloud

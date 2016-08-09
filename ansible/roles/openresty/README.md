@@ -33,6 +33,5 @@ These are defined in the ``services`` list. The list containes objects with
 schema::
 ```json
 {
-    "
 }
 ```
