@@ -44,6 +44,7 @@ meta = dict(
     url='https://github.com/quantmind/pulsar-agile',
     include_package_data=True,
     zip_safe=False,
+    setup_requires=['pulsar'],
     install_requires=requirements('requirements.txt')[0],
     classifiers=[
         'Development Status :: 3 - Alpha',
