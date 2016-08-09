@@ -10,8 +10,8 @@
 :Keywords: git, github, python, aws, release, documentation
 
 
-. |pypiversion| image:: https://badge.fury.io/py/pulsar-agile.svg
-    :target: https://pypi.python.org/pypi/pulsar-agile
+.. |pypiversion| image:: https://badge.fury.io/py/pulsar-agile.svg
+  :target: https://pypi.python.org/pypi/pulsar-agile
 .. |pyversions| image:: https://img.shields.io/pypi/pyversions/pulsar-agile.svg
   :target: https://pypi.python.org/pypi/pulsar-agile
 .. |license| image:: https://img.shields.io/pypi/l/pulsar-agile.svg
