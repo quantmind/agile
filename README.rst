@@ -53,25 +53,79 @@ Once installed, create the ``play.py`` script inside of your repository:
 
 and create the agile.json_ file along side it.
 
-Commands
-------------
-
-Available commands to configure are:
-
-* **docs**: Compile sphinx docs and upload them to aws
-* **httpcopy**: Copy remote files to local ones via Http
-* **labels**: Set labels in github issues
-* **release**: Make a new release
-* **sass**: Compile scss files using SASS
-* **shell**: Run arbitrary commands on the shell
-
 
 Usage
-=========
+---------
 
 **Check tasks available**::
 
   python play.py -l
+
+
+Logging
+----------
+
+When running tasks, the logging level is by default set to info. For a more
+verbose logging pass ``--log-level agile.debug``.
+
+
+Commands
+============
+
+
+Github
+---------
+
+Pulsar agile contains two commands which interacts with github:
+
+* **labels**
+* **release**
+
+Configuration
+~~~~~~~~~~~~~~~~
+
+Before using github commands one needs to configure the ``.gitconfig`` file by adding the ``username``
+and the ``token``. The ``token`` is obtained from github from the
+`personal access tokens <https://github.com/settings/tokens>`_ page::
+
+    [user]
+      email = ...
+      username = lsbardel
+      token = bqedoeunzplesw52tme00zwuj2lhbjr8emrbrxax
+
+Labels
+~~~~~~~~~~~
+
+Keep labels consistent across repositories. To add a label command create the **labels** entry in the `agile.json` file
+```json
+{
+    "labels": {
+        "group1": {
+            "repositories": [
+                "quantmind/pulsar-agile",
+                "quantmind/pulsar-cloud"
+            ],
+            "labels": {
+                "aws": "e47911",
+                "benchmark": "006b75"
+            }
+        }
+    },
+    "tasks": {
+        "repo-labels": {
+            "description": "Update labels in all repositories",
+            "command": ["labels"]
+        }
+    }
+}
+```
+and run the ``repo-labels`` command::
+
+    python play.py repo-labels
+
+
+Release
+~~~~~~~~~~~~
 
 **Release dry run**::
 
@@ -82,11 +136,24 @@ Usage
   python play.py release --push
 
 
-Logging
-----------
+Sass
+------
 
-When running tasks, the logging level is by default set to info. For a more
-verbose logging pass ``--log-level agile.debug``.
+Compile scss files using SASS
+
+
+Shell
+--------
+
+Run arbitrary commands on the shell
+
+
+Template
+------------
+
+Transform jinja2_ templates files into new files with context dictionary given in the `agile.json`
+or other `json` files. It can also replace ad-hoc string via the ``replace`` directive.
+
 
 Testing
 ==========
@@ -108,3 +175,4 @@ the following two entries:
 .. _`Quantmind`: http://quantmind.com
 .. _`google user group`: https://groups.google.com/forum/?fromgroups#!forum/python-pulsar
 .. _agile.json: https://github.com/quantmind/pulsar-agile/blob/master/agile.json
+.. _jinja2: https://github.com/pallets/jinja

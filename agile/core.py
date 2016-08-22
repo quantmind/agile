@@ -61,14 +61,14 @@ class AgileCommand(metaclass=AgileMeta):
         """
         pass
 
-    async def shell(self, command=None, **kw):
+    async def shell(self, command=None, context=None, **kw):
         """Execute a list of shell commands
 
         :param commands: list or string of shell commands
         """
         results = []
         for com in utils.as_list(command, 'shell commands should be a list'):
-            com = self.render(com)
+            com = self.render(com, context=context)
             self.logger.info('executing shell: %s', com)
             text = self.log_execute(await self.execute(com, **kw))
             if text:

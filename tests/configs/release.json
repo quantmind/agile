@@ -33,6 +33,16 @@
             "src": "https://bla.com/foo.html"
         }
     },
+    "template": {
+        "test1": {
+            "description": "test file creation from a directory of templates",
+            "src": "tests/templates/*",
+            "dest": "tests/templates-dest/",
+            "replace": {
+                "`replace this \"value\"`": "foo"
+            }
+        }
+    },
     "tasks": {
         "badtask": ["pythontest"],
         "releasepy": {
@@ -54,6 +64,9 @@
         },
         "httpcopy-error": {
             "command": "httpcopy:error"
+        },
+        "template1": {
+            "command": "template:test1"
         }
     }
 }
