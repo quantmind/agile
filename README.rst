@@ -136,6 +136,20 @@ Release
   python play.py release --push
 
 
+HttpCopy
+----------
+
+Copy files over an Http connection.
+For example to copy:
+```json
+"httpcopy": {
+    "sockjs": {
+        "src": "https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/{{ sockjs_version }}/sockjs.js",
+        "target": "/media/"
+    }
+}
+```
+
 Sass
 ------
 

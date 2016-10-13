@@ -7,6 +7,9 @@ from pulsar.utils.string import to_bytes
 from jinja2 import Template
 
 
+STREAM_LIMIT = 2**20
+
+
 class AgileError(Exception):
     pass
 
@@ -60,7 +63,8 @@ async def execute(command, input=None, chdir=None, interactive=False,
         command,
         stdin=stdin,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
+        stderr=asyncio.subprocess.PIPE,
+        limit=STREAM_LIMIT
     )
     if input is not None:
         proc._feed_stdin(to_bytes(input))
