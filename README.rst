@@ -96,29 +96,32 @@ and the ``token``. The ``token`` is obtained from github from the
 Labels
 ~~~~~~~~~~~
 
-Keep labels consistent across repositories. To add a label command create the **labels** entry in the `agile.json` file
-```json
-{
-    "labels": {
-        "group1": {
-            "repositories": [
-                "quantmind/pulsar-agile",
-                "quantmind/pulsar-cloud"
-            ],
-            "labels": {
-                "aws": "e47911",
-                "benchmark": "006b75"
+Keep labels consistent across repositories.
+To add a label command create the **labels** entry in the `agile.json` file:
+
+.. code:: json
+    
+    {
+        "labels": {
+            "group1": {
+                "repositories": [
+                    "quantmind/pulsar-agile",
+                    "quantmind/pulsar-cloud"
+                ],
+                "labels": {
+                    "aws": "e47911",
+                    "benchmark": "006b75"
+                }
+            }
+        },
+        "tasks": {
+            "repo-labels": {
+                "description": "Update labels in all repositories",
+                "command": ["labels"]
             }
         }
-    },
-    "tasks": {
-        "repo-labels": {
-            "description": "Update labels in all repositories",
-            "command": ["labels"]
-        }
     }
-}
-```
+
 and run the ``repo-labels`` command::
 
     python play.py repo-labels
