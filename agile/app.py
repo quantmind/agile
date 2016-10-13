@@ -90,14 +90,20 @@ class AgileManager(pulsar.Application, core.TaskExecutor):
 
     async def worker_start(self, worker, exc=None):
         if not exc:
-            executor = await self.executor(loop=worker._loop)
-            if executor.cfg.list_tasks:
-                worker._loop.call_soon(self.list_tasks, executor)
-            elif executor.cfg.environ:
-                worker._loop.call_soon(self.show_environ, executor)
+            try:
+                print(self.script)
+                executor = await self.executor(loop=worker._loop)
+            except Exception:
+                self.logger.exception('Could not initialise')
+                worker._loop.call_soon(self.done, 2)
             else:
-                fut = ensure_future(executor(), loop=worker._loop)
-                fut.add_done_callback(self._exit)
+                if executor.cfg.list_tasks:
+                    worker._loop.call_soon(self.list_tasks, executor)
+                elif executor.cfg.environ:
+                    worker._loop.call_soon(self.show_environ, executor)
+                else:
+                    fut = ensure_future(executor(), loop=worker._loop)
+                    fut.add_done_callback(self._exit)
 
     def executor(self, **kw):
         return core.TaskExecutor.create(self.cfg, **kw)
