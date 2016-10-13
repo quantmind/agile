@@ -1,11 +1,11 @@
 import os
 import sys
 import json
-import asyncio
 import logging
 from collections import Mapping, OrderedDict
 
 import pulsar
+from pulsar.apps.http import HttpClient
 
 from . import utils
 from .git import Git
@@ -128,18 +128,22 @@ class TaskExecutor:
     """
     @classmethod
     async def create(cls, cfg, loop=None, auth=None):
-        git = await Git.create()
-        gitapi = git.api(auth=auth)
-        repo_path = await git.toplevel()
-        return cls(cfg, git, gitapi, repo_path, loop=loop)
+        http = HttpClient(loop=loop)
+        try:
+            git = await Git.create()
+            gitapi = git.api(auth=auth, http=http)
+            repo_path = await git.toplevel()
+        except Exception:
+            git = gitapi = repo_path = None
+        return cls(cfg, http, git, gitapi, repo_path)
 
-    def __init__(self, cfg, git, gitapi, repo_path, loop=None):
+    def __init__(self, cfg, http, git, gitapi, repo_path):
         self.cfg = cfg
         self.git = git
         self.gitapi = gitapi
         self.repo_path = repo_path
         self.logger = logging.getLogger('agile')
-        self._loop = loop or asyncio.get_event_loop()
+        self.http = http
         self._running = False
         self.context = {
             'cfg': self.cfg,
@@ -183,8 +187,8 @@ class TaskExecutor:
         return code
 
     @property
-    def http(self):
-        return self.gitapi.http
+    def _loop(self):
+        return self.http._loop
 
     def render(self, text, context=None):
         """Render text if a string
