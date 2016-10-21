@@ -203,6 +203,8 @@ async def execute_command(agile, command, options):
 
     config = agile.config.get(key)
     if not config:
+        if Command.always:
+            return
         raise utils.AgileError('No entry "%s" in %s' %
                                (key, agile.cfg.config_file))
 

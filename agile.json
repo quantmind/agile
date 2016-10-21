@@ -1,5 +1,5 @@
 {
-    "vars": {
+    "python": {
         "agile_version": "agile.__version__"
     },
     "github": {
@@ -20,6 +20,7 @@
         "release": {
             "description": "release a new version to github and create a pypi bundle",
             "command": [
+                "python",
                 "github"
             ]
         }
