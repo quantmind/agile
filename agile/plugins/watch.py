@@ -10,11 +10,12 @@ from .. import core
 _win = (sys.platform == "win32")
 
 
-class Watch(core.AgileCommand, core.TaskExecutor):
-    description = 'Watch for changes on file system and execute tasks'
+class Watch(core.AgileCommand):
+    description = 'Watch for changes on file system and execute commands'
     watching = None
+    _waiter = None
 
-    async def __call__(self, name, config, options):
+    async def run(self, name, config, options):
         files = self.as_list(config.get('files'), 'files entry not valid')
         tasks = self.as_list(config.get('command'), 'command entry not valid')
         if self.watching is None:
@@ -23,8 +24,8 @@ class Watch(core.AgileCommand, core.TaskExecutor):
         self.watching.append((files, tasks))
 
     def start_server(self):
-        self._loop.call_later(1, ensure_future, self.watch())
-        self.logger.info('Started watching server')
+        self._loop.call_later(1, self._watch)
+        self.logger.info('Started watch server')
         return True
 
     async def watch(self):
@@ -34,13 +35,13 @@ class Watch(core.AgileCommand, core.TaskExecutor):
             except Exception:
                 self.logger.exception('Exception while watching %s',
                                       str(files))
-        self._loop.call_later(1, ensure_future, self.watch())
+        self._loop.call_later(1, self._watch)
 
     async def check(self, files, tasks):
         filename = self.changed(files)
         if filename:
             self.logger.warning('CHANGES in "%s"', filename)
-            await self.app(tasks)
+            await self.executor.run(tasks)
             self.logger.info('FINISHED with "%s" changes', filename)
 
     def changed(self, files):
@@ -57,3 +58,6 @@ class Watch(core.AgileCommand, core.TaskExecutor):
                 elif mtime != current:
                     self.all_files[filename] = mtime
                     return filename
+
+    def _watch(self):
+        self._waiter = ensure_future(self.watch())

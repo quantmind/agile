@@ -2,7 +2,8 @@ import pulsar
 from pulsar import validate_list, ensure_future, HaltServer
 
 from . import core
-from . import commands      # noqa
+from . import actions      # noqa
+from . import plugins      # noqa
 
 
 exclude = set(pulsar.Config().settings)
@@ -27,12 +28,12 @@ class ConfigFile(core.AgileSetting):
 
 
 class ListTasks(core.AgileSetting):
-    name = "list_tasks"
-    flags = ['-l', '--list-tasks']
+    name = "list_commands"
+    flags = ['-l', '--list-commands']
     action = "store_true"
     default = False
     desc = """\
-        List of available tasks
+        List of available commands
         """
 
 
@@ -68,23 +69,14 @@ class Environ(core.AgileSetting):
     desc = "Show the environment and exit"
 
 
-class AgileManager(pulsar.Application, core.TaskExecutor):
+class AgileManager(pulsar.Application):
     name = 'agile'
     cfg = pulsar.Config(apps=['agile'],
                         log_level=['pulsar.error', 'info'],
                         log_handlers=['console_name_level_message'],
                         description='Agile release manager',
                         exclude=exclude)
-    gitapi = None
-    config = None
-    note_file = None
-    context = None
-    repo_path = None
-    """Path of repository
-    """
-    releases_path = None
-    """Path to the location of release configuration files
-    """
+
     def monitor_start(self, monitor, exc=None):
         self.cfg.set('workers', 0)
 
@@ -97,19 +89,19 @@ class AgileManager(pulsar.Application, core.TaskExecutor):
                 self.logger.exception('Could not initialise')
                 worker._loop.call_soon(self.done, 2)
             else:
-                if executor.cfg.list_tasks:
-                    worker._loop.call_soon(self.list_tasks, executor)
+                if executor.cfg.list_commands:
+                    worker._loop.call_soon(self.list_commands, executor)
                 elif executor.cfg.environ:
                     worker._loop.call_soon(self.show_environ, executor)
                 else:
-                    fut = ensure_future(executor(), loop=worker._loop)
+                    fut = ensure_future(executor.run(), loop=worker._loop)
                     fut.add_done_callback(self._exit)
 
     def executor(self, **kw):
-        return core.TaskExecutor.create(self.cfg, **kw)
+        return core.CommandExecutor.create(self.cfg, **kw)
 
-    def list_tasks(self, executor):
-        executor.list_tasks()
+    def list_commands(self, executor):
+        executor.list_commands()
         self.done()
 
     def show_environ(self, executor):

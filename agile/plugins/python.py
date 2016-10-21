@@ -7,7 +7,7 @@ from .. import core
 class Python(core.AgileCommand):
     description = 'Run a python function from the same application domain'
 
-    async def __call__(self, name, config, options):
+    async def run(self, name, config, options):
         function = config.get('function')
         if not function:
             raise self.error('function path not specified')
@@ -15,7 +15,7 @@ class Python(core.AgileCommand):
         if hasattr(result, '__call__'):
             result = await as_coroutine(result(self))
         if result:
-            self.app.context[name] = result
+            self.context[name] = result
 
     def as_dict(self, cfg, entry):
         if isinstance(cfg, str):

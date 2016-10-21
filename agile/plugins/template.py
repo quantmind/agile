@@ -8,7 +8,7 @@ from .. import core
 class Template(core.AgileCommand):
     description = 'Render a template into a new file'
 
-    async def __call__(self, name, cfg, options):
+    async def run(self, name, cfg, options):
         src = cfg.get('src')
         if not isinstance(src, str):
             raise self.error('src should be a string')
@@ -34,7 +34,7 @@ class Template(core.AgileCommand):
             self._render(src, dest, item, replace)
 
     def _render(self, src, dest, item, replace):
-        context = self.context(item=item)
+        context = self.new_context(item=item)
         dest = self.render(dest, context)
 
         is_glob = True

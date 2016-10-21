@@ -8,7 +8,7 @@ from .. import core
 class HttpCopy(core.AgileCommand):
     description = 'Copy remote files to local ones via Http'
 
-    async def __call__(self, name, cfg, options):
+    async def run(self, name, cfg, options):
         srcs = self.as_list(cfg.get('src'), 'missing src')
         target = cfg.get('target')
         if not target:
@@ -24,7 +24,7 @@ class HttpCopy(core.AgileCommand):
         await asyncio.gather(*requests)
 
     async def _http_and_copy(self, src, target, item):
-        context = self.context(item=item)
+        context = self.new_context(item=item)
         src = self.render(src, context)
         target = self.render(target, context)
         response = await self.http.get(src)

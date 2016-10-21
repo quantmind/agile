@@ -17,15 +17,15 @@ class Docs(core.AgileCommand):
     """
     description = 'Compile sphinx docs and upload them to aws'
 
-    async def __call__(self, name, config, options):
-        path = os.path.join(self.app.repo_path, 'docs')
+    async def run(self, name, config, options):
+        path = os.path.join(self.repo_path, 'docs')
         if not os.path.isdir(path):
             raise ImproperlyConfigured('path "%s" missing' % path)
         os.chdir(path)
         try:
             text = await self.execute('make', self.cfg.docs)
         finally:
-            os.chdir(self.app.repo_path)
+            os.chdir(self.repo_path)
         self.logger.info(text)
 
         if self.cfg.push:
@@ -38,7 +38,7 @@ class Docs(core.AgileCommand):
             raise ImproperlyConfigured('Please specify the "docs_bucket" '
                                        'in your config file')
         docs = self.cfg.docs
-        path = os.path.join(self.app.repo_path, 'docs', '_build', docs)
+        path = os.path.join(self.repo_path, 'docs', '_build', docs)
         if not os.path.isdir(path):
             raise ImproperlyConfigured('path "%s" missing' % path)
         self.logger.info('Docs at "%s"', path)

@@ -11,7 +11,9 @@ from . import utils
 from .git import Git
 
 
-agile_commands = {}
+agile_always = OrderedDict()
+agile_commands = OrderedDict()
+agile_actions = OrderedDict()
 
 
 class AgileSetting(pulsar.Setting):
@@ -20,39 +22,90 @@ class AgileSetting(pulsar.Setting):
     section = "Git Agile"
 
 
+class Agile:
+
+    @property
+    def _loop(self):
+        return self.http._loop
+
+    def as_dict(self, cfg, entry=None):
+        return utils.as_dict(cfg, '%s entry not valid' % entry)
+
+    def as_list(self, cfg, entry=None):
+        return utils.as_list(cfg, '%s entry not valid' % entry)
+
+    def new_context(self, *args, **kwargs):
+        context = self.executor.context.copy()
+        context.update(*args, **kwargs)
+        return context
+
+    def render(self, text, context=None):
+        """Render text if a string
+        """
+        if isinstance(text, list):
+            return [self.render(v, context) for v in text]
+        if isinstance(text, str) and '{{' in text and '}}' in text:
+            return utils.render(text, context or self.context)
+        else:
+            return text
+
+    def eval(self, text):
+        try:
+            return eval(text, {}, self.context)
+        except Exception:
+            raise utils.AgileError('Could not eval: "%s"' % text) from None
+
+
 class AgileMeta(type):
     """A metaclass which collects all setting classes and put them
     in the global ``KNOWN_SETTINGS`` list.
     """
     def __new__(cls, name, bases, attrs):
         abstract = attrs.pop('abstract', False)
-        attrs['command'] = attrs.pop('command', name.lower())
+        attrs['key'] = attrs.pop('key', name.lower())
         new_class = super().__new__(cls, name, bases, attrs)
-        new_class.logger = logging.getLogger('agile.%s' % new_class.command)
+        new_class.logger = logging.getLogger('agile.%s' % new_class.key)
         if not abstract:
-            agile_commands[new_class.command] = new_class
+            if issubclass(new_class, AgileAction):
+                agile_actions[new_class.key] = new_class
+            else:
+                agile_commands[new_class.key] = new_class
+                if new_class.always:
+                    agile_always[new_class.key] = new_class
         return new_class
 
 
-class AgileCommand(metaclass=AgileMeta):
+class AgileBase(Agile, metaclass=AgileMeta):
+    abstract = True
+
+    def __init__(self, executor):
+        self.executor = executor
+
+    @property
+    def http(self):
+        return self.executor.http
+
+
+class AgileAction(AgileBase):
+    abstract = True
+
+    def run(self, options):
+        pass
+
+
+class AgileCommand(AgileBase):
     """Base class for agile applications
     """
     abstract = True
+    always = False
     description = 'Agile command'
 
-    def __init__(self, app):
-        self.app = app
-
-    @property
-    def _loop(self):
-        return self.app.http._loop
-
-    def __call__(self, entry, cfg, options):
+    def run(self, entry, cfg, options):
         """Execute a command for a given entry"""
         pass
 
     def __getattr__(self, name):
-        return getattr(self.app, name)
+        return getattr(self.executor, name)
 
     def start_server(self):
         """Start a server
@@ -83,17 +136,6 @@ class AgileCommand(metaclass=AgileMeta):
             self.logger.debug(text, extra=dict(color=False))
         return text
 
-    def context(self, *args, **kwargs):
-        context = self.app.context.copy()
-        context.update(*args, **kwargs)
-        return context
-
-    def as_dict(self, cfg, entry=None):
-        return utils.as_dict(cfg, '%s entry not valid' % entry)
-
-    def as_list(self, cfg, entry=None):
-        return utils.as_list(cfg, '%s entry not valid' % entry)
-
     def with_items(self, cfg):
         with_items = cfg.get('with_items')
         if with_items:
@@ -107,10 +149,10 @@ class AgileCommand(metaclass=AgileMeta):
         return utils.AgileError(*args)
 
 
-def passthrough(manager, version):
+def passthrough(executor, version):
     """A simple pass through function
 
-    :param manager: the release app
+    :param executor: the executor
     :param version: release version
     :return: nothing
     """
@@ -118,13 +160,74 @@ def passthrough(manager, version):
 
 
 def task_description(task):
-    return task.get("description", "no description given")
+    if isinstance(task, Mapping):
+        return task.get("description", "no description given")
+    return task.description
 
 
-class TaskExecutor:
-    """Execute a list of tasks
+async def execute_commands(agile, commands, options):
+    started = None
+    for command in commands:
+        extra = None
 
-    Each task is executed once the previous task is finished
+        if isinstance(command, Mapping):
+            extra = command
+            command = extra.pop('command', None)
+
+        if not command:
+            raise utils.AgileError('command not defined')
+
+        try:
+
+            agile.executor.apply_actions(extra)
+            started = await execute_command(agile, command, options)
+            if started:
+                break
+        except utils.AgileSkip:
+            agile.logger.info('Skip command %s', command)
+    return started
+
+
+async def execute_command(agile, command, options):
+    bits = command.split(':')
+    key = bits[0]
+    entry = None
+    if len(bits) == 2:
+        entry = bits[1]
+    elif len(bits) > 2:
+        raise utils.AgileError('bad command %s' % command)
+
+    Command = agile_commands.get(key)
+    if not Command:
+        raise utils.AgileError('No such command "%s"' % key)
+
+    config = agile.config.get(key)
+    if not config:
+        raise utils.AgileError('No entry "%s" in %s' %
+                               (key, agile.cfg.config_file))
+
+    config = config.copy()
+    opts = options.copy()
+    opts.update(config.pop('options', {}))
+    agile = Command(agile.executor)
+
+    if entry is not None:
+        cfg = config.get(entry)
+        if not cfg:
+            raise utils.AgileError('No entry "%s" in %s' %
+                                   (command, agile.cfg.config_file))
+        await agile.run(entry, agile.as_dict(cfg, entry), opts)
+    else:
+        for entry, cfg in config.items():
+            await agile.run(entry, agile.as_dict(cfg, entry), opts)
+
+    return agile.start_server()
+
+
+class CommandExecutor:
+    """Execute commands
+
+    Each command is executed once the previous command has finished
     """
     @classmethod
     async def create(cls, cfg, loop=None, auth=None):
@@ -151,77 +254,64 @@ class TaskExecutor:
             'repo_path': self.repo_path
         }
         self.config = self._load_json()
+        self.actions = (((key, Action(self)) for key, Action
+                         in agile_actions.items()))
 
-    async def __call__(self, tasks=None):
+    @property
+    def executor(self):
+        return self
+
+    def apply_actions(self, options):
+        if not options:
+            return
+        for action in self.actions.values():
+            action(options)
+
+    async def run(self, commands=None):
         code = 0
-        if tasks is None:
-            tasks = tuple(self.cfg.tasks or self.config['tasks'])
-        start = False
-        command = None
+        names = list(agile_always)
+        if commands is None:
+            commands = self.cfg.tasks
+        names.extend(commands)
         try:
-            assert not self._running
-            self._running = True
-            for task in tasks:
-                try:
-                    command = TaskCommand(self, task)
-                    start = await command()
-                except utils.AgileError as exc:
-                    if self.cfg.force:
-                        self.logger.error(exc)
-                    else:
-                        raise
-                if start:
-                    code = 3
-                    break
-            if not start:
+            if await execute_commands(self, names, {}):
+                code = 3
+            else:
                 await self.http.close()
         except utils.AgileError as exc:
-            msg = '%s - %s' % (command, exc)
-            self.logger.error(msg)
+            self.logger.error(str(exc))
             code = 2
         except Exception as exc:
             self.logger.exception(str(exc))
             code = 1
-        finally:
-            self._running = False
         return code
 
-    @property
-    def _loop(self):
-        return self.http._loop
+    def list_commands(self):
+        count = 0
+        for key in sorted(self.config):
+            Command = agile_commands.get(key)
+            if Command and not Command.always:
+                commands = utils.as_dict(
+                    self.config.get(key),
+                    'Plugin %s should be a dictionary of commands' % key
+                )
+                print('')
+                print('%s: %s' % (key, task_description(Command)))
+                print('==========================================')
+                for name in sorted(commands):
+                    count += 1
+                    full_name = '%s:%s' % (key, name)
+                    cfg = utils.as_dict(
+                        commands.get(name),
+                        'Command %s should be a dictionary of commands' %
+                        full_name
+                    )
+                    print('%s: %s' % (full_name, task_description(cfg)))
+                print('==========================================')
 
-    def render(self, text, context=None):
-        """Render text if a string
-        """
-        if isinstance(text, list):
-            return [self.render(v, context) for v in text]
-        if isinstance(text, str) and '{{' in text and '}}' in text:
-            return utils.render(text, context or self.context)
-        else:
-            return text
-
-    def eval(self, text):
-        try:
-            return eval(text, {}, self.context)
-        except Exception:
-            raise utils.AgileError('Could not eval: "%s"' % text) from None
-
-    def list_tasks(self):
-        tasks = self.config.get('tasks')
-        if not tasks:
-            raise utils.AgileExit('No "tasks" entry in your %s file' %
-                                  self.cfg.config_file)
         print('')
-        print('==========================================')
-        print('There are %d tasks available' % len(tasks))
-        print('==========================================')
+        print('There are %d commands available' % count)
         print('')
-        for name, task in tasks.items():
-            task = utils.as_dict(
-                task, 'tasks should be a dictionary of dictionaries')
-            print('%s: %s' % (name, task_description(task)))
-        print('')
-        print('==========================================')
 
     def show_environ(self):
         ctx = self.context.copy()
@@ -241,104 +331,6 @@ class TaskExecutor:
         if entry not in self.context:
             self.context[entry] = load_json(config_file)
         return self.context.get(entry)
-
-
-class TaskCommand:
-    """Execute a task entry
-    """
-    def __init__(self, manager, task, running=None):
-        self.manager = manager
-        self.task = task
-        self.running = set(running or ())
-        if task not in self.all_tasks:
-            raise utils.AgileError('No such task "%s"' % task)
-        self.info = utils.as_dict(self.all_tasks[task],
-                                  'Task should be a dictionary')
-        self.commands = utils.as_list(self.info.get('command'),
-                                      'No command entry for "%s" task' % task)
-        self.running.add(task)
-
-    def __repr__(self):
-        return self.task
-    __str__ = __repr__
-
-    @property
-    def all_tasks(self):
-        return self.manager.config['tasks']
-
-    async def __call__(self):
-        self.manager.logger.info('Executing "%s" task - %s' %
-                                 (self.task, task_description(self.info)))
-        started = False
-        for command in self.commands:
-            extra = None
-
-            if isinstance(command, Mapping):
-                extra = command
-                command = extra.pop('command', None)
-
-            if not command:
-                raise utils.AgileError('command not defined')
-
-            if command in self.running:
-                raise utils.AgileError('command already running')
-
-            try:
-                self.check_conditions(extra)
-
-                if command in self.all_tasks:
-                    # the command is another task
-                    command = TaskCommand(self.manager, command, self.running)
-                    started = await command()
-                else:
-                    started = await self._execute(command)
-                if started:
-                    break
-            except utils.AgileSkip:
-                self.manager.logger.info('Skip command %s', command)
-        return started
-
-    def check_conditions(self, extra):
-        if not extra:
-            return
-
-        if 'when' in extra and not self.manager.eval(extra['when']):
-            raise utils.AgileSkip
-
-    async def _execute(self, command, start=False):
-        bits = command.split(':')
-        key = bits[0]
-        entry = None
-        if len(bits) == 2:
-            entry = bits[1]
-        elif len(bits) > 2:
-            raise utils.AgileError('bad command %s' % command)
-
-        manager = self.manager
-        Command = agile_commands.get(key)
-        if not Command:
-            raise utils.AgileError('No such command "%s"' % key)
-
-        config = manager.config.get(key)
-        if not config:
-            raise utils.AgileError('No entry "%s" in %s' %
-                                   (key, manager.cfg.config_file))
-
-        config = config.copy()
-        options = config.pop('options', {})
-        app = Command(manager)
-
-        if entry is not None:
-            cfg = config.get(entry)
-            if not cfg:
-                raise utils.AgileError('No entry "%s" in %s' %
-                                       (command, manager.cfg.config_file))
-            await app(entry, app.as_dict(cfg, entry), options)
-        else:
-            for entry, cfg in config.items():
-                await app(entry, app.as_dict(cfg, entry), options)
-
-        return app.start_server()
 
 
 def load_json(filename):

@@ -42,7 +42,7 @@ class Github(core.AgileCommand):
     description = 'Create a new release in github'
     actions = frozenset(('shell', 'upload'))
 
-    async def __call__(self, name, config, options):
+    async def run(self, name, config, options):
         git = self.git
         gitapi = self.gitapi
         release_notes_file = config.get('release_notes_file',

@@ -8,14 +8,14 @@ class Shell(core.AgileCommand):
     """
     description = 'Run arbitrary commands on the shell'
 
-    async def __call__(self, name, cfg, options):
+    async def run(self, name, cfg, options):
         with_items = self.with_items(cfg)
         if with_items is None:
             with_items = ['']
 
         results = []
         for item in with_items:
-            context = self.context(item=item)
+            context = self.new_context(item=item)
             results.append(self.shell(context=context, **cfg))
 
         results = await gather(*results)
@@ -24,4 +24,4 @@ class Shell(core.AgileCommand):
             if results and len(results) == 1:
                 results = results[0]
 
-        self.app.context[name] = results
+        self.context[name] = results

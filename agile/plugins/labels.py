@@ -6,7 +6,7 @@ from .. import core
 class Labels(core.AgileCommand):
     description = 'Set labels in github issues'
 
-    async def __call__(self, name, config, options):
+    async def run(self, name, config, options):
         repositories = self.as_list(config.get('repositories'),
                                     'No repositories given, must be a list')
         labels = self.as_dict(config.get('labels'),

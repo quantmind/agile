@@ -8,7 +8,7 @@ from .. import core
 class S3(core.AgileCommand):
     description = 'Upload files to S3'
 
-    async def __call__(self, name, config, options):
+    async def run(self, name, config, options):
         try:
             from cloud import aws
         except ImportError:

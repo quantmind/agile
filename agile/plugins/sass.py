@@ -36,7 +36,7 @@ class Sass(core.AgileCommand):
         await asyncio.gather(*coros)
 
     async def _sass(self, command, target, src, args, end, item):
-        context = self.context(item=item)
+        context = self.new_context(item=item)
         target = self.render(target, context)
         src = self.render(src, context)
         if target.endswith('.css'):
