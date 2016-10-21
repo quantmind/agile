@@ -52,7 +52,7 @@ class AgileTest(unittest.TestCase):
     auth = None
 
     @classmethod
-    def app(cls, tasks=None, config_file=None, **kwargs):
+    def executor(cls, tasks=None, config_file=None, **kwargs):
         config_file = config_file or cls.config_file
         app = AgileManager(tasks=tasks, config_file=config_file, **kwargs)
         return app.executor(auth=cls.auth)

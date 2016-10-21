@@ -97,6 +97,22 @@ def as_dict(entry, msg=None):
     return entry
 
 
+def safe(f):
+
+    async def _(self, *args, **kwargs):
+        try:
+            code = await f(self, *args, **kwargs)
+            return code
+        except AgileError as exc:
+            self.logger.error(str(exc))
+            return 2
+        except Exception as exc:
+            self.logger.exception(str(exc))
+            return 1
+
+    return _
+
+
 async def _interact(proc, fd, interactive, out):
     transport = proc._transport.get_pipe_transport(fd)
     stream = proc.stdout if fd == 1 else proc.stderr

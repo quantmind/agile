@@ -5,10 +5,10 @@ class TestShell(tests.AgileTest):
     config_file = 'tests/configs/shell1.json'
 
     async def test_no_tasks(self):
-        app = await self.app()
+        app = await self.executor()
         self.assertEqual(app.cfg.tasks, [])
 
     async def test_task(self):
-        app = await self.app(["show"])
+        app = await self.executor(["show"])
         self.assertEqual(app.cfg.tasks, ["show"])
-        self.assertEqual(await app(), 0)
+        self.assertEqual(await app.run(), 0)

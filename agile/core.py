@@ -224,7 +224,7 @@ async def execute_command(agile, command, options):
     return agile.start_server()
 
 
-class CommandExecutor:
+class CommandExecutor(Agile):
     """Execute commands
 
     Each command is executed once the previous command has finished
@@ -267,26 +267,19 @@ class CommandExecutor:
         for action in self.actions.values():
             action(options)
 
+    @utils.safe
     async def run(self, commands=None):
-        code = 0
         names = list(agile_always)
         if commands is None:
             commands = self.cfg.tasks
         names.extend(commands)
-        try:
-            if await execute_commands(self, names, {}):
-                code = 3
-            else:
-                await self.http.close()
-        except utils.AgileError as exc:
-            self.logger.error(str(exc))
-            code = 2
-        except Exception as exc:
-            self.logger.exception(str(exc))
-            code = 1
-        return code
+        if await execute_commands(self, names, {}):
+            return 3
+        else:
+            await self.http.close()
 
-    def list_commands(self):
+    @utils.safe
+    async def list_commands(self):
         count = 0
         for key in sorted(self.config):
             Command = agile_commands.get(key)
@@ -313,7 +306,8 @@ class CommandExecutor:
         print('There are %d commands available' % count)
         print('')
 
-    def show_environ(self):
+    @utils.safe
+    async def show_environ(self):
         ctx = self.context.copy()
         name = self.cfg.config_file.split('.')[0]
         ctx.pop(name, None)

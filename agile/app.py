@@ -90,25 +90,19 @@ class AgileManager(pulsar.Application):
                 worker._loop.call_soon(self.done, 2)
             else:
                 if executor.cfg.list_commands:
-                    worker._loop.call_soon(self.list_commands, executor)
+                    executed = executor.list_commands()
                 elif executor.cfg.environ:
-                    worker._loop.call_soon(self.show_environ, executor)
+                    executed = executor.show_environ()
                 else:
-                    fut = ensure_future(executor.run(), loop=worker._loop)
-                    fut.add_done_callback(self._exit)
+                    executed = executor.run()
+                fut = ensure_future(executed, loop=worker._loop)
+                fut.add_done_callback(self._exit)
 
     def executor(self, **kw):
         return core.CommandExecutor.create(self.cfg, **kw)
 
-    def list_commands(self, executor):
-        executor.list_commands()
-        self.done()
-
-    def show_environ(self, executor):
-        executor.show_environ()
-        self.done()
-
-    def done(self, exit_code=0):
+    def done(self, exit_code=None):
+        exit_code = exit_code or 0
         if exit_code < 3:
             raise HaltServer(exit_code=exit_code)
 

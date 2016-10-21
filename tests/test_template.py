@@ -7,10 +7,10 @@ import tests
 class TestTemplate(tests.AgileTest):
 
     async def test_template_wildcard(self):
-        app = await self.app(["template1"])
+        app = await self.executor(["template1"])
         self.assertEqual(app.cfg.tasks, ["template1"])
         try:
-            await app()
+            await app.run()
             self.assertTrue(os.path.isdir('tests/templates-dest'))
         finally:
             if os.path.isdir('tests/templates-dest'):

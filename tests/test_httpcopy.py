@@ -24,13 +24,13 @@ class TestHttpCopy(tests.AgileTest):
             shutil.rmtree(tmp)
 
     async def test_http_copy_files(self):
-        agile = await self.app(["httpfiles"])
+        agile = await self.executor(["httpfiles"])
         agile.context['tmp'] = tmp
-        self.assertEqual(await agile(), 0)
+        self.assertEqual(await agile.run(), 0)
         self.assertTrue(os.path.isdir(tmp))
         self.assertTrue(os.path.isdir(os.path.join(tmp, 'flatly')))
         self.assertTrue(os.path.isdir(os.path.join(tmp, 'journal')))
 
     async def test_http_copy_error(self):
-        agile = await self.app(["httpcopy-error"])
-        self.assertEqual(await agile(), 2)
+        agile = await self.executor(["httpcopy-error"])
+        self.assertEqual(await agile.run(), 2)
