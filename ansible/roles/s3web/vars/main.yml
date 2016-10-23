@@ -1,3 +1,0 @@
----
-index_html: "{{ s3web_install_path }}/index.html"
-error_html: "{{ s3web_install_path }}/error.html"

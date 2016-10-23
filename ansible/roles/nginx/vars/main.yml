@@ -1,4 +1,0 @@
----
-tmp_key_file: /tmp/{{ domain }}.key.enc
-server_crt: /etc/ssl/_wildcard_.{{ domain }}.pem
-server_key: /etc/ssl/_wildcard_.{{ domain }}.key

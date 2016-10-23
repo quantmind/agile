@@ -186,7 +186,13 @@ the following two entries:
     os.environ['GITHUB_TOKEN'] = "<generate one from https://github.com/settings/tokens>"
     os.environ['GITHUB_TEST_REPO'] = "<username>/<reponame>"
 
+Changelog
+==============
 
+* `Versions 0.5 </docs/history/0.5.md>`_
+* `Versions 0.4 </docs/history/0.4.md>`_
+* `Versions 0.3 </docs/history/0.3.md>`_
+* `Versions 0.2 </docs/history/0.2.md>`_
 
 .. _`Luca Sbardella`: http://lucasbardella.com
 .. _`Quantmind`: http://quantmind.com

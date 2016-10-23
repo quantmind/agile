@@ -6,6 +6,7 @@ from .. import core
 
 class Python(core.AgileCommand):
     description = 'Run a python function from the same application domain'
+    always = True
 
     async def run(self, name, config, options):
         function = config.get('function')

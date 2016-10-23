@@ -3,7 +3,8 @@
         "agile_version": "agile.__version__"
     },
     "github": {
-        "agile": {
+        "release": {
+            "description": "release pulsar-agile to github",
             "version": "{{ agile_version }}",
             "release_notes": "docs/history"
         }
@@ -14,15 +15,6 @@
                         "rm -rf dist",
                         "rm -rf *.log",
                         "rm -rf *.egg-info"]
-        }
-    },
-    "tasks": {
-        "release": {
-            "description": "release a new version to github and create a pypi bundle",
-            "command": [
-                "python",
-                "github"
-            ]
         }
     }
 }

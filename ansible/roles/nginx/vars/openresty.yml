@@ -1,2 +1,0 @@
-nginx_openresty_executable: /usr/local/openresty/nginx/sbin/nginx
-nginx_conf_dir: /usr/local/openresty/nginx/conf
