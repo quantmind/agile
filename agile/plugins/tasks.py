@@ -8,4 +8,5 @@ class Tasks(core.AgileCommand):
 
     async def run(self, name, cfg, options):
         commands = self.as_list(cfg.get('command'), 'missing command entry')
-        return core.execute_commands(self, commands, options)
+        result = await core.execute_commands(self, commands, options)
+        return result

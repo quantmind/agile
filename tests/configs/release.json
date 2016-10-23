@@ -62,9 +62,6 @@
         "httpfiles": {
             "command": "httpcopy:bootswatch"
         },
-        "httpcopy-error": {
-            "command": "httpcopy:error"
-        },
         "template1": {
             "command": "template:test1"
         }

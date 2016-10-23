@@ -9,6 +9,6 @@ class TestShell(tests.AgileTest):
         self.assertEqual(app.cfg.tasks, [])
 
     async def test_task(self):
-        app = await self.executor(["show"])
-        self.assertEqual(app.cfg.tasks, ["show"])
-        self.assertEqual(await app.run(), 0)
+        app = await self.executor(["tasks:show"])
+        self.assertEqual(app.cfg.tasks, ["tasks:show"])
+        self.assertFalse(await app.run())
