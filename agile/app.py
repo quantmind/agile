@@ -1,12 +1,12 @@
-import pulsar
-from pulsar import validate_list, ensure_future, HaltServer
+from pulsar.api import ensure_future, HaltServer, Config, Application
+from pulsar.utils.config import validate_list
 
 from . import core
 from . import actions      # noqa
 from . import plugins      # noqa
 
 
-exclude = set(pulsar.Config().settings)
+exclude = set(Config().settings)
 exclude.difference_update(('config', 'log_level', 'log_handlers', 'debug'))
 
 
@@ -69,13 +69,15 @@ class Environ(core.AgileSetting):
     desc = "Show the environment and exit"
 
 
-class AgileManager(pulsar.Application):
+class AgileManager(Application):
     name = 'agile'
-    cfg = pulsar.Config(apps=['agile'],
-                        log_level=['pulsar.error', 'info'],
-                        log_handlers=['console_name_level_message'],
-                        description='Agile release manager',
-                        exclude=exclude)
+    cfg = Config(
+        apps=['agile'],
+        log_level=['pulsar.error', 'info'],
+        log_handlers=['console_name_level_message'],
+        description='Agile release manager',
+        exclude=exclude
+    )
 
     def monitor_start(self, monitor, exc=None):
         self.cfg.set('workers', 0)

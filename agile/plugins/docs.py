@@ -1,7 +1,7 @@
 import os
 from importlib import import_module
 
-from pulsar import ImproperlyConfigured
+from pulsar.api import ImproperlyConfigured
 
 from cloud import aws
 

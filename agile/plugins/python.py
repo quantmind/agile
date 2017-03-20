@@ -1,4 +1,3 @@
-from pulsar import as_coroutine
 from pulsar.utils.importer import module_attribute
 
 from .. import core
@@ -14,7 +13,11 @@ class Python(core.AgileCommand):
             raise self.error('function path not specified')
         result = module_attribute(function)
         if hasattr(result, '__call__'):
-            result = await as_coroutine(result(self))
+            result = result(self)
+            try:
+                result = await result
+            except TypeError:
+                pass
         if result:
             self.context[name] = result
 

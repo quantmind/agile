@@ -4,7 +4,7 @@ import json
 import logging
 from collections import Mapping, OrderedDict
 
-import pulsar
+from pulsar.api import Setting
 from pulsar.apps.http import HttpClient
 
 from . import utils
@@ -16,7 +16,7 @@ agile_commands = OrderedDict()
 agile_actions = OrderedDict()
 
 
-class AgileSetting(pulsar.Setting):
+class AgileSetting(Setting):
     virtual = True
     app = 'agile'
     section = "Git Agile"
