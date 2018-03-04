@@ -1,4 +1,4 @@
-from pulsar import as_coroutine
+from pulsar.api import as_coroutine
 from pulsar.utils.importer import module_attribute
 
 from .. import core

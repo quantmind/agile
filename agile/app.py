@@ -1,12 +1,17 @@
-import pulsar
-from pulsar import validate_list, ensure_future, HaltServer
+import os
+from asyncio import ensure_future
+
+from pulsar.api import Application, HaltServer, Config
+from pulsar.utils.config import validate_list
+
+import agile
 
 from . import core
 from . import actions      # noqa
 from . import plugins      # noqa
 
 
-exclude = set(pulsar.Config().settings)
+exclude = set(Config().settings)
 exclude.difference_update(('config', 'log_level', 'log_handlers', 'debug'))
 
 
@@ -21,7 +26,7 @@ class Tasks(core.AgileSetting):
 class ConfigFile(core.AgileSetting):
     name = "config_file"
     flags = ["--config-file"]
-    default = "agile.json"
+    default = os.environ.get('AGILE_CONFIG_FILE', "agile.json")
     desc = """\
         Configuration file
         """
@@ -69,13 +74,16 @@ class Environ(core.AgileSetting):
     desc = "Show the environment and exit"
 
 
-class AgileManager(pulsar.Application):
+class AgileManager(Application):
     name = 'agile'
-    cfg = pulsar.Config(apps=['agile'],
-                        log_level=['pulsar.error', 'info'],
-                        log_handlers=['console_name_level_message'],
-                        description='Agile release manager',
-                        exclude=exclude)
+    cfg = Config(
+        version=agile.__version__,
+        apps=['agile'],
+        log_level=['pulsar.error', 'info'],
+        log_handlers=['console_message'],
+        description='Agile command line',
+        exclude=exclude
+    )
 
     def monitor_start(self, monitor, exc=None):
         self.cfg.set('workers', 0)
@@ -83,7 +91,6 @@ class AgileManager(pulsar.Application):
     async def worker_start(self, worker, exc=None):
         if not exc:
             try:
-                print(self.script)
                 executor = await self.executor(loop=worker._loop)
             except Exception:
                 self.logger.exception('Could not initialise')

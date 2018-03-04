@@ -20,3 +20,4 @@ _build
 dist
 config.py
 *.egg-info
+venv

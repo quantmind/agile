@@ -4,7 +4,7 @@ import json
 import logging
 from collections import Mapping, OrderedDict
 
-import pulsar
+from pulsar.api import Setting
 from pulsar.apps.http import HttpClient
 
 from . import utils
@@ -16,7 +16,7 @@ agile_commands = OrderedDict()
 agile_actions = OrderedDict()
 
 
-class AgileSetting(pulsar.Setting):
+class AgileSetting(Setting):
     virtual = True
     app = 'agile'
     section = "Git Agile"
@@ -114,19 +114,25 @@ class AgileCommand(AgileBase):
         """
         pass
 
-    async def shell(self, command=None, context=None, **kw):
+    async def shell(self, command=None, context=None, store=False, **kw):
         """Execute a list of shell commands
 
         :param commands: list or string of shell commands
         """
-        results = []
         for com in utils.as_list(command, 'shell commands should be a list'):
             com = self.render(com, context=context)
-            self.logger.info('executing shell: %s', com)
+            self.logger.debug('executing shell: %s', com)
             text = self.log_execute(await self.execute(com, **kw))
             if text:
-                results.append(text)
-        return results
+                self.logger.info(text)
+                if store:
+                    if context is None:
+                        self.logger.warning(
+                            'Cannot store %s in context. Contet not provided',
+                            store
+                        )
+                    else:
+                        context[store] = text
 
     def execute(self, *args, **kwargs):
         return utils.execute(*args, **kwargs)

@@ -31,9 +31,10 @@ class HttpCopy(core.AgileCommand):
         try:
             response.raise_for_status()
         except Exception:
-            self.logger.error('Could not http copy %s: %s',
-                              src, response.get_status())
-            return
+            return self.logger.error(
+                'Could not http copy %s: %s - %s',
+                src, response.status_code, response.reason
+            )
         path, target = os.path.split(target)
         if not os.path.isdir(path):
             os.makedirs(path)

@@ -44,8 +44,12 @@ meta = dict(
     url='https://github.com/quantmind/pulsar-agile',
     include_package_data=True,
     zip_safe=False,
-    setup_requires=['pulsar', 'wheel'],
-    install_requires=requirements('requirements.txt')[0],
+    install_requires=requirements('requirements/hard.txt')[0],
+    entry_points={
+        'console_scripts': [
+            "agile = agile.console:main"
+        ]
+    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
